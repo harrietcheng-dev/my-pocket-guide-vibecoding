@@ -1,0 +1,48 @@
+<view class="page companion-page">
+  <view class="title">在途陪伴</view>
+  <view class="muted subtitle">像导游一样，在旅途中随时陪着你</view>
+
+  <block wx:if="{{trip}}">
+    <view class="current-place card">
+      <view class="status">当前行程</view>
+      <view class="place-title">{{currentNode ? currentNode.name : trip.title}}</view>
+      <view class="muted">{{currentNode ? currentNode.reason : '准备开始今天的旅程'}}</view>
+    </view>
+
+    <view class="feature card">
+      <view class="feature-icon orange">讲</view>
+      <view class="feature-main">
+        <view class="feature-title">到达景点自动讲解</view>
+        <view class="muted">到达行程景点后，主动介绍历史和故事</view>
+      </view>
+      <button size="mini" class="feature-button" bindtap="toggleExplain">{{explaining ? '暂停' : '试听'}}</button>
+    </view>
+
+    <view class="feature card question-card">
+      <view class="feature-head">
+        <view class="feature-icon blue">问</view>
+        <view><view class="feature-title">随时提问</view><view class="muted">关于景点、路线和周边服务都可以问</view></view>
+      </view>
+      <view class="question-row">
+        <input class="question-input" value="{{question}}" bindinput="inputQuestion" placeholder="输入你的问题" />
+        <button class="ask-button" bindtap="ask">发送</button>
+      </view>
+      <view wx:if="{{answer}}" class="answer">{{answer}}</view>
+    </view>
+
+    <view class="feature card" bindtap="replan">
+      <view class="feature-icon green">调</view>
+      <view class="feature-main">
+        <view class="feature-title">灵活调整</view>
+        <view class="muted">累了、下雨或临时有变化，随时调整后续行程</view>
+      </view>
+      <view class="arrow">›</view>
+    </view>
+  </block>
+
+  <view wx:else class="empty card">
+    <view class="empty-title">还没有可陪伴的行程</view>
+    <view class="muted">先创建行程，再开启在途陪伴</view>
+    <button class="primary-button" bindtap="createTrip">创建新行程</button>
+  </view>
+</view>

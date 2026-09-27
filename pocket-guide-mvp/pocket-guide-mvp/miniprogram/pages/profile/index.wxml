@@ -1,13 +1,8 @@
 <view class="page">
-  <view class="profile-head card">
-    <view class="avatar">游</view>
-    <view><view class="profile-title">游客</view><view class="muted">登录后可跨设备同步</view></view>
+  <view class="title">我的</view>
+  <view class="profile-placeholder card">
+    <view class="placeholder-icon">＋</view>
+    <view class="placeholder-title">个人中心框架</view>
+    <view class="muted">内容区域已预留，等待后续完善</view>
   </view>
-  <view class="menu card">
-    <view wx:for="{{items}}" wx:key="title" class="menu-item">
-      <view><view class="menu-title">{{item.title}}</view><view class="muted desc">{{item.desc}}</view></view>
-      <view class="arrow">›</view>
-    </view>
-  </view>
-  <button class="secondary-button" bindtap="clearDemo">清除演示数据</button>
 </view>

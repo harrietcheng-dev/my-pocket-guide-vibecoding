@@ -31,7 +31,9 @@ Page({
       }
       clearInterval(this.timer)
       api.generateTrip(this.data.tripId).then(() => {
-        wx.redirectTo({ url: `/pages/itinerary/index?id=${this.data.tripId}` })
+        getApp().globalData.currentTripId = this.data.tripId
+        wx.setStorageSync('currentTripId', this.data.tripId)
+        wx.switchTab({ url: '/pages/trips/index' })
       })
     }, 650)
   }

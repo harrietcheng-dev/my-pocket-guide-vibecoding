@@ -13,7 +13,7 @@ Page({
     this.setData({ selectedDay: Number(event.currentTarget.dataset.index) })
   },
   openMap() {
-    wx.switchTab({ url: '/pages/map/index' })
+    wx.switchTab({ url: '/pages/trips/index' })
   },
   replan() {
     wx.navigateTo({ url: `/pages/replan/index?id=${this.tripId}` })
