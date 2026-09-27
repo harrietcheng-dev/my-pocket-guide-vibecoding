@@ -51,7 +51,7 @@ def build_trip(constraints: dict[str, Any]) -> dict[str, Any]:
             )
     return {
         "id": trip_id,
-        "state": "READY",
+        "state": "DRAFT",
         "version": 1,
         "title": f"{city}{requested_days}日游",
         "constraints": constraints,

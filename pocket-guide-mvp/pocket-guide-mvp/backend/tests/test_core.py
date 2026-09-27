@@ -13,6 +13,8 @@ class CoreFlowTest(unittest.TestCase):
             db.DATABASE_PATH = Path(directory) / "test.db"
             try:
                 db.initialize()
+                session = db.save_session("anon_test", "device_test", "2099-01-01T00:00:00+00:00")
+                self.assertEqual(db.get_session(session["token"])["device_id"], "device_test")
                 trip = build_trip(
                     {
                         "city": "北京",
@@ -29,6 +31,7 @@ class CoreFlowTest(unittest.TestCase):
                 loaded = db.get_trip(trip["id"])
                 self.assertEqual(loaded["title"], "北京4日游")
                 self.assertEqual(len(loaded["days"]), 4)
+                self.assertEqual(loaded["state"], "DRAFT")
 
                 replan = build_replan(loaded, "走得有点累，后面少走一点")
                 adjusted = apply_replan(loaded, replan)

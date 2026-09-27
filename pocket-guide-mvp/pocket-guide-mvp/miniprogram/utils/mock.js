@@ -23,7 +23,7 @@ function makeTrip(constraints) {
   const city = constraints.city || '北京'
   return {
     id,
-    state: 'READY',
+    state: 'DRAFT',
     version: 1,
     title: `${city}${constraints.days || 4}日游`,
     constraints,
@@ -100,8 +100,51 @@ module.exports = {
   listTrips() {
     return Promise.resolve(clone(readTrips()))
   },
+  confirmTrip(id) {
+    return updateTrip(id, (trip) => {
+      trip.state = 'CONFIRMED'
+    })
+  },
   generateTrip(id) {
-    return this.getTrip(id)
+    return updateTrip(id, (trip) => {
+      trip.state = 'READY'
+    })
+  },
+  startTrip(id) {
+    return updateTrip(id, (trip) => {
+      trip.state = 'ACTIVE'
+      trip.startedAt = new Date().toISOString()
+    })
+  },
+  checkInNode(id, nodeId) {
+    return updateTrip(id, (trip) => {
+      const nodeItem = findNode(trip, nodeId)
+      nodeItem.status = 'IN_PROGRESS'
+      nodeItem.checkedInAt = new Date().toISOString()
+    })
+  },
+  updateNodeStatus(id, nodeId, action) {
+    return updateTrip(id, (trip) => {
+      const nodeItem = findNode(trip, nodeId)
+      nodeItem.status = action
+      nodeItem.finishedAt = new Date().toISOString()
+    })
+  },
+  completeTrip(id, note) {
+    return updateTrip(id, (trip) => {
+      let completedNodes = 0
+      let skippedNodes = 0
+      trip.days.forEach((day) => day.nodes.forEach((nodeItem) => {
+        if (nodeItem.status === 'COMPLETED') completedNodes += 1
+        else {
+          nodeItem.status = 'SKIPPED'
+          skippedNodes += 1
+        }
+      }))
+      trip.state = 'COMPLETED'
+      trip.completedAt = new Date().toISOString()
+      trip.completionSummary = { completedNodes, skippedNodes, note }
+    })
   },
   createReplan(id, request) {
     const trip = readTrips().find((item) => item.id === id)
@@ -145,4 +188,21 @@ module.exports = {
     writeTrips(trips)
     return Promise.resolve(clone(restored))
   }
+}
+
+function updateTrip(id, mutate) {
+  const trips = readTrips()
+  const index = trips.findIndex((item) => item.id === id)
+  if (index < 0) return Promise.reject(new Error('行程不存在'))
+  mutate(trips[index])
+  writeTrips(trips)
+  return Promise.resolve(clone(trips[index]))
+}
+
+function findNode(trip, nodeId) {
+  for (const day of trip.days) {
+    const nodeItem = day.nodes.find((item) => item.id === nodeId)
+    if (nodeItem) return nodeItem
+  }
+  throw new Error('行程节点不存在')
 }

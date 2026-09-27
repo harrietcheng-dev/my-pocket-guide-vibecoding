@@ -12,5 +12,15 @@
 .node-head { display: flex; align-items: center; font-size: 31rpx; font-weight: 700; }
 .node-head .pill { margin: 0 0 0 12rpx; font-size: 22rpx; }
 .meta { margin-top: 12rpx; color: #07517a; font-size: 24rpx; }
+.node-actions { display: flex; align-items: center; gap: 12rpx; margin-top: 18rpx; }
+.node-actions button { margin: 0; }
+.checkin-button { color: #ffffff; background: #1677e8; }
+.complete-button { color: #ffffff; background: #07517a; }
+.skip-button { color: #667085; background: #f2f4f7; }
+.node-status { font-size: 24rpx; font-weight: 600; }
+.node-status.COMPLETED { color: #0f8a5f; }
+.node-status.SKIPPED { color: #98a2b3; }
 .budget { margin-top: 22rpx; line-height: 1.8; }
 .budget-title { margin-top: 0; }
+.completion { margin-top: 22rpx; color: #07517a; }
+.completion-title { margin-top: 0; }

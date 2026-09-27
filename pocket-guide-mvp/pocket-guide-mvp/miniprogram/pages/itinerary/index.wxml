@@ -4,7 +4,7 @@
       <view class="title">{{trip.title}}</view>
       <view class="muted">{{trip.constraints.partySize}} 人 · 预算 ¥{{trip.constraints.groupBudgetCny}} · 版本 {{trip.version}}</view>
     </view>
-    <view class="status">待出发</view>
+    <view class="status">{{stateLabels[trip.state]}}</view>
   </view>
 
   <view wx:if="{{trip.lastAdjustment}}" class="adjusted">已调整：{{trip.lastAdjustment}}</view>
@@ -25,6 +25,12 @@
         <view class="node-head"><text>{{item.name}}</text><text class="pill">{{item.type}}</text></view>
         <view class="muted">{{item.reason}}</view>
         <view class="meta">停留 {{item.durationMin}} 分钟 · ¥{{item.costRange[0]}}–{{item.costRange[1]}}</view>
+        <view wx:if="{{trip.state === 'ACTIVE'}}" class="node-actions">
+          <button wx:if="{{item.status === 'PLANNED'}}" size="mini" class="checkin-button" data-id="{{item.id}}" bindtap="checkIn">签到</button>
+          <button wx:if="{{item.status === 'IN_PROGRESS'}}" size="mini" class="complete-button" data-id="{{item.id}}" bindtap="completeNode">完成</button>
+          <button wx:if="{{item.status === 'PLANNED' || item.status === 'IN_PROGRESS'}}" size="mini" class="skip-button" data-id="{{item.id}}" bindtap="skipNode">跳过</button>
+          <text wx:else class="node-status {{item.status}}">{{nodeStatusLabels[item.status]}}</text>
+        </view>
       </view>
     </view>
   </view>
@@ -35,7 +41,14 @@
     <view class="muted">价格为区间估算，临时公告请出发前复核。</view>
   </view>
 
+  <view wx:if="{{trip.completionSummary}}" class="card completion">
+    <view class="section-title completion-title">行程完成</view>
+    <view>完成 {{trip.completionSummary.completedNodes}} 个节点，跳过 {{trip.completionSummary.skippedNodes}} 个节点</view>
+  </view>
+
   <button class="primary-button" bindtap="openMap">查看地图</button>
-  <button class="accent-button" bindtap="replan">途中动态调整</button>
-  <button wx:if="{{trip.previousSnapshot}}" class="secondary-button" bindtap="undo">撤销最近调整</button>
+  <button wx:if="{{trip.state === 'READY'}}" class="accent-button" loading="{{acting}}" bindtap="startTrip">开始行程</button>
+  <button wx:if="{{trip.state === 'ACTIVE'}}" class="accent-button" bindtap="replan">途中动态调整</button>
+  <button wx:if="{{trip.state === 'ACTIVE'}}" class="secondary-button" loading="{{acting}}" bindtap="finishTrip">结束行程</button>
+  <button wx:if="{{trip.state === 'ACTIVE' && trip.previousSnapshot}}" class="secondary-button" bindtap="undo">撤销最近调整</button>
 </view>

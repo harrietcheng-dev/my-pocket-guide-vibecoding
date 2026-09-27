@@ -17,6 +17,7 @@ Page({
     if (this.data.creating) return
     this.setData({ creating: true })
     api.createTrip(this.data.draft)
+      .then((trip) => api.confirmTrip(trip.id))
       .then((trip) => wx.redirectTo({ url: `/pages/progress/index?id=${trip.id}` }))
       .catch((error) => {
         this.setData({ creating: false })

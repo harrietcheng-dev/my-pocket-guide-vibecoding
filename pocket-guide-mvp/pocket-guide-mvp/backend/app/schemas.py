@@ -32,6 +32,14 @@ class AnonymousSessionRequest(BaseModel):
     device_id: str | None = None
 
 
+class NodeStatusRequest(BaseModel):
+    action: str = Field(pattern="^(COMPLETED|SKIPPED)$")
+
+
+class CompleteTripRequest(BaseModel):
+    note: str | None = Field(default=None, max_length=500)
+
+
 class TripResponse(BaseModel):
     id: str
     state: str
