@@ -1,0 +1,8 @@
+:host { display: inline-block; }
+.avatar { display: flex; flex-direction: column; align-items: center; }
+.portrait { width: 100%; overflow: hidden; position: relative; border-radius: 24rpx; background: #fff; }
+.sheet { position: absolute; width: 287.708333%; height: 237.291667%; max-width: none; }
+.single { width: 100%; height: 100%; }
+.speaking { animation: breathe 1.8s ease-in-out infinite; }
+.status { margin-top: 12rpx; font-size: 24rpx; color: #07517a; text-align: center; }
+@keyframes breathe { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4rpx); } }
