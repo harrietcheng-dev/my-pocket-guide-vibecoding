@@ -23,14 +23,17 @@
       "ignore": [],
       "disablePlugins": [],
       "outputPath": ""
-    }
+    },
+    "swc": false,
+    "disableSWC": true
   },
-  "appid": "wxddf373fb804162b3",
+  "appid": "wx422e1aa8b51601a9",
   "projectname": "pocket-guide-mvp",
   "simulatorPluginLibVersion": {},
   "packOptions": {
     "ignore": [],
     "include": []
   },
-  "editorSetting": {}
+  "editorSetting": {},
+  "libVersion": "3.17.3"
 }

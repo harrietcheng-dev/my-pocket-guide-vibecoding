@@ -12,9 +12,14 @@ Page({
   onShow() {
     const id = wx.getStorageSync('currentTripId')
     if (!id) return this.setData({ trip: null, markers: [], polyline: [] })
-    api.getTrip(id).then((trip) => {
-      this.setData({ trip }, () => this.drawDay(0))
-    })
+    api.getTrip(id)
+      .then((trip) => {
+        this.setData({ trip }, () => this.drawDay(0))
+      })
+      .catch(() => {
+        wx.removeStorageSync('currentTripId')
+        this.setData({ trip: null, markers: [], polyline: [] })
+      })
   },
   selectDay(event) {
     this.drawDay(Number(event.currentTarget.dataset.index))

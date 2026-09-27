@@ -6,7 +6,9 @@ Page({
     api.listTrips().then((trips) => this.setData({ trips }))
   },
   open(event) {
-    wx.navigateTo({ url: `/pages/itinerary/index?id=${event.currentTarget.dataset.id}` })
+    const id = event.currentTarget.dataset.id
+    wx.setStorageSync('currentTripId', id)
+    wx.navigateTo({ url: `/pages/itinerary/index?id=${id}` })
   },
   create() {
     wx.navigateTo({ url: '/pages/create/index' })

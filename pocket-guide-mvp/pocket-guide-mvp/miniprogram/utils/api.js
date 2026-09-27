@@ -21,7 +21,13 @@ function request(path, method = 'GET', data) {
 
 module.exports = {
   createTrip(data) {
-    return useMock ? mock.createTrip(data) : request('/trips', 'POST', { constraints: data })
+    const operation = useMock
+      ? mock.createTrip(data)
+      : request('/trips', 'POST', { constraints: data })
+    return operation.then((trip) => {
+      wx.setStorageSync('currentTripId', trip.id)
+      return trip
+    })
   },
   generateTrip(id) {
     return useMock ? mock.generateTrip(id) : request(`/trips/${id}/generate`, 'POST')

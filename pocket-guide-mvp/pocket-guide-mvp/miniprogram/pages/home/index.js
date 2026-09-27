@@ -9,7 +9,12 @@ Page({
   onShow() {
     const id = wx.getStorageSync('currentTripId')
     if (!id) return this.setData({ currentTrip: null })
-    api.getTrip(id).then((currentTrip) => this.setData({ currentTrip }))
+    api.getTrip(id)
+      .then((currentTrip) => this.setData({ currentTrip }))
+      .catch(() => {
+        wx.removeStorageSync('currentTripId')
+        this.setData({ currentTrip: null })
+      })
   },
   createTrip() {
     wx.navigateTo({ url: '/pages/create/index' })
