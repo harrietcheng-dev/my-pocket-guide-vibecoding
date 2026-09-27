@@ -1,4 +1,23 @@
-.trip-list { margin-top: 24rpx; }
-.trip { display: flex; justify-content: space-between; margin-bottom: 20rpx; }
-.trip-title { margin-bottom: 8rpx; font-size: 34rpx; font-weight: 700; }
-.meta { margin-top: 14rpx; color: #07517a; font-size: 24rpx; }
+.trip-head { display: flex; align-items: flex-start; justify-content: space-between; }
+.view-tabs { display: flex; margin: 28rpx 0 18rpx; padding: 8rpx; border-radius: 20rpx; background: #eaf7fb; }
+.view-tab { flex: 1; padding: 18rpx; border-radius: 16rpx; text-align: center; color: #667085; font-weight: 600; }
+.view-tab.active { color: #ffffff; background: #1677e8; }
+.day-tabs { margin-bottom: 18rpx; white-space: nowrap; }
+.day-tab { display: inline-block; margin-right: 12rpx; padding: 12rpx 24rpx; border-radius: 999rpx; color: #07517a; background: #eaf7fb; }
+.day-tab.active { color: #ffffff; background: #1677e8; }
+.day-summary { display: flex; justify-content: space-between; margin-bottom: 20rpx; color: #07517a; font-size: 24rpx; }
+.node { display: grid; grid-template-columns: 86rpx 28rpx 1fr; padding-bottom: 24rpx; }
+.time { padding-top: 5rpx; color: #667085; font-size: 24rpx; }
+.timeline { position: relative; border-left: 3rpx solid #cfe4f4; }
+.timeline-dot { position: absolute; top: 10rpx; left: -9rpx; width: 15rpx; height: 15rpx; border-radius: 50%; background: #1677e8; }
+.node-head { display: flex; align-items: center; justify-content: space-between; font-weight: 700; }
+.node-reason { margin-top: 6rpx; }
+.meta { margin-top: 10rpx; color: #07517a; font-size: 23rpx; }
+.route-map { width: 100%; height: 560rpx; border-radius: 24rpx; overflow: hidden; }
+.route-list { margin-top: 18rpx; }
+.route-node { display: flex; align-items: center; padding: 16rpx 0; border-bottom: 1rpx solid #edf1f3; }
+.route-node:last-child { border-bottom: 0; }
+.route-index { width: 48rpx; height: 48rpx; margin-right: 18rpx; border-radius: 50%; line-height: 48rpx; text-align: center; color: #ffffff; background: #1677e8; }
+.route-name { font-weight: 700; }
+.empty { margin-top: 40rpx; }
+.empty-title { margin-bottom: 12rpx; color: #1f2937; font-size: 34rpx; font-weight: 700; }

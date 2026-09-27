@@ -1,17 +1,55 @@
-<view class="page">
-  <view class="title">我的行程</view>
-  <view wx:if="{{trips.length}}" class="trip-list">
-    <view wx:for="{{trips}}" wx:key="id" class="trip card" data-id="{{item.id}}" bindtap="open">
-      <view class="trip-main">
-        <view class="trip-title">{{item.title}}</view>
-        <view class="muted">{{item.constraints.startDate}} 至 {{item.constraints.endDate}}</view>
-        <view class="meta">{{item.constraints.partySize}} 人 · ¥{{item.constraints.groupBudgetCny}} · {{item.constraints.pace}}</view>
+<view class="page trips-page">
+  <block wx:if="{{trip}}">
+    <view class="trip-head">
+      <view>
+        <view class="title">{{trip.title}}</view>
+        <view class="muted">{{trip.constraints.startDate}} 至 {{trip.constraints.endDate}}</view>
       </view>
-      <view class="status">{{item.state === 'READY' ? '待出发' : item.state}}</view>
+      <view class="status">{{trip.state === 'READY' ? '待出发' : trip.state}}</view>
     </view>
-  </view>
+
+    <view class="view-tabs">
+      <view class="view-tab {{view === 'overview' ? 'active' : ''}}" data-view="overview" bindtap="switchView">行程总览</view>
+      <view class="view-tab {{view === 'route' ? 'active' : ''}}" data-view="route" bindtap="switchView">地图路线</view>
+    </view>
+
+    <scroll-view scroll-x class="day-tabs">
+      <view wx:for="{{trip.days}}" wx:key="dayIndex" class="day-tab {{selectedDay === index ? 'active' : ''}}" data-index="{{index}}" bindtap="selectDay">{{item.dateLabel}}</view>
+    </scroll-view>
+
+    <view wx:if="{{view === 'overview'}}" class="card day-card">
+      <view class="day-summary">
+        <text>预计步行 {{trip.days[selectedDay].walkDistanceKm}} km</text>
+        <text>{{trip.days[selectedDay].nodes.length}} 个节点</text>
+      </view>
+      <view wx:for="{{trip.days[selectedDay].nodes}}" wx:key="id" class="node">
+        <view class="time">{{item.time}}</view>
+        <view class="timeline"><view class="timeline-dot"></view></view>
+        <view class="node-body">
+          <view class="node-head"><text>{{item.name}}</text><text class="pill">{{item.type}}</text></view>
+          <view class="muted node-reason">{{item.reason}}</view>
+          <view class="meta">停留 {{item.durationMin}} 分钟 · ¥{{item.costRange[0]}}–{{item.costRange[1]}}</view>
+        </view>
+      </view>
+    </view>
+
+    <view wx:else class="route-panel">
+      <map class="route-map" latitude="{{latitude}}" longitude="{{longitude}}" scale="12" markers="{{markers}}" polyline="{{polyline}}"></map>
+      <view class="card route-list">
+        <view wx:for="{{trip.days[selectedDay].nodes}}" wx:key="id" class="route-node">
+          <view class="route-index">{{index + 1}}</view>
+          <view><view class="route-name">{{item.name}}</view><view class="muted">{{item.time}} · {{item.type}}</view></view>
+        </view>
+      </view>
+    </view>
+
+    <button class="primary-button" bindtap="openCompanion">进入在途陪伴</button>
+    <button class="secondary-button" bindtap="replan">调整行程</button>
+  </block>
+
   <view wx:else class="empty card">
-    <view>还没有行程</view>
-    <button class="primary-button" bindtap="create">创建第一份行程</button>
+    <view class="empty-title">还没有行程</view>
+    <view class="muted">从首页创建一段专属旅程吧</view>
+    <button class="primary-button" bindtap="create">创建新行程</button>
   </view>
 </view>

@@ -1,9 +1,3 @@
-.profile-head { display: flex; align-items: center; }
-.avatar { width: 92rpx; height: 92rpx; margin-right: 22rpx; line-height: 92rpx; text-align: center; color: #07517a; background: #fff8e8; border: 3rpx solid #07517a; border-radius: 46rpx; font-size: 38rpx; font-weight: 700; }
-.profile-title { font-size: 34rpx; font-weight: 700; }
-.menu { margin-top: 22rpx; }
-.menu-item { display: flex; align-items: center; justify-content: space-between; padding: 24rpx 0; border-bottom: 1rpx solid #edf1f3; }
-.menu-item:last-child { border-bottom: 0; }
-.menu-title { font-weight: 600; }
-.desc { margin-top: 6rpx; font-size: 23rpx; }
-.arrow { color: #98a2b3; font-size: 48rpx; }
+.profile-placeholder { margin-top: 28rpx; padding: 100rpx 28rpx; text-align: center; border-style: dashed; }
+.placeholder-icon { width: 88rpx; height: 88rpx; margin: 0 auto 22rpx; border-radius: 50%; line-height: 84rpx; color: #1677e8; background: #eaf7fb; font-size: 52rpx; }
+.placeholder-title { margin-bottom: 12rpx; font-size: 32rpx; font-weight: 700; }

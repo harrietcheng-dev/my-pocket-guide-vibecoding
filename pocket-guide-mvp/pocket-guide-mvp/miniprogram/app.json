@@ -1,8 +1,8 @@
 {
   "pages": [
     "pages/home/index",
-    "pages/map/index",
     "pages/trips/index",
+    "pages/companion/index",
     "pages/profile/index",
     "pages/create/index",
     "pages/summary/index",
@@ -24,8 +24,8 @@
     "borderStyle": "white",
     "list": [
       { "pagePath": "pages/home/index", "text": "首页" },
-      { "pagePath": "pages/map/index", "text": "地图" },
       { "pagePath": "pages/trips/index", "text": "行程" },
+      { "pagePath": "pages/companion/index", "text": "在途陪伴" },
       { "pagePath": "pages/profile/index", "text": "我的" }
     ]
   },

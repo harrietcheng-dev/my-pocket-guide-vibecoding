@@ -20,7 +20,7 @@ Page({
     wx.navigateTo({ url: '/pages/create/index' })
   },
   continueTrip() {
-    wx.navigateTo({ url: `/pages/itinerary/index?id=${this.data.currentTrip.id}` })
+    wx.switchTab({ url: '/pages/trips/index' })
   },
   chooseCity(event) {
     wx.setStorageSync('draftCity', event.currentTarget.dataset.city)
