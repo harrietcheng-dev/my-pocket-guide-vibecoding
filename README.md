@@ -1,5 +1,3 @@
-# my-pocket-guide-vibecoding
-基于大模型智能体与数字人的个性化AI旅行地陪
 # 我的口袋导游 MVP
 
 这是根据 V1 产品需求搭建的可演示 MVP，包含：
@@ -20,15 +18,6 @@ pocket-guide-mvp/
 └── README.md
 ```
 
-## 直接体验小程序
-
-1. 打开微信开发者工具。
-2. 导入本目录 `pocket-guide-mvp`。
-3. 使用测试号或自己的 AppID。
-4. 编译后从首页点击“创建新行程”。
-
-默认 `miniprogram/utils/api.js` 中 `useMock = true`，不启动后端也能走通完整演示。
-
 ## 启动后端
 
 ```powershell
@@ -39,14 +28,17 @@ python -m uvicorn app.main:app --reload --port 8000
 
 打开 `http://127.0.0.1:8000/docs` 查看接口文档。
 
-联调时修改 `miniprogram/utils/api.js`：
+## 启动并联调小程序
 
-```js
-const useMock = false
-const baseUrl = 'http://127.0.0.1:8000/api/v1'
-```
+1. 保持后端服务运行。
+2. 打开微信开发者工具，导入本目录 `pocket-guide-mvp`。
+3. 使用测试号或自己的 AppID。
+4. 在“详情 → 本地设置”中勾选“不校验合法域名、web-view（业务域名）、TLS 版本以及 HTTPS 证书”。
+5. 点击“编译”，然后从首页点击“创建新行程”。
 
-真机环境需要将地址替换为 HTTPS 合法域名。
+小程序默认连接本地接口 `http://127.0.0.1:8000/api/v1`。联调时可在微信开发者工具的 Network 和 Console 面板查看请求与错误，同时在后端终端查看接口访问日志。
+
+模拟器可直接访问 `127.0.0.1`。真机调试时需要让后端监听 `0.0.0.0`，并将接口地址替换为电脑的局域网 IP；正式发布时需要使用 HTTPS 合法域名。
 
 ## 主演示脚本
 
