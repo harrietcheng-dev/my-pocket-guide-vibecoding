@@ -32,7 +32,7 @@ python -m uvicorn app.main:app --reload --port 8000
 
 1. 保持后端服务运行。
 2. 打开微信开发者工具，导入本目录 `pocket-guide-mvp`。
-3. 使用测试号或自己的 AppID。
+3. 使用AppID：wxddf373fb804162b3。
 4. 在“详情 → 本地设置”中勾选“不校验合法域名、web-view（业务域名）、TLS 版本以及 HTTPS 证书”。
 5. 点击“编译”，然后从首页点击“创建新行程”。
 
