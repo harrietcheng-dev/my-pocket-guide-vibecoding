@@ -1,0 +1,10 @@
+.progress-page { padding-top: 120rpx; text-align: center; }
+.avatar { margin: 0 auto 26rpx; width: 136rpx; height: 136rpx; line-height: 136rpx; border-radius: 68rpx; color: #07517a; background: #fff8e8; border: 4rpx solid #07517a; font-size: 54rpx; font-weight: 700; }
+.progress-page .muted { margin: 16rpx auto 38rpx; max-width: 600rpx; line-height: 1.6; }
+.stage-list { text-align: left; }
+.stage { display: flex; align-items: center; padding: 22rpx 0; color: #98a2b3; border-bottom: 1rpx solid #edf1f3; }
+.stage:last-child { border-bottom: 0; }
+.stage.active { color: #1677e8; font-weight: 600; }
+.stage.done { color: #07517a; }
+.dot { width: 52rpx; height: 52rpx; margin-right: 20rpx; line-height: 52rpx; text-align: center; border-radius: 26rpx; background: #eaf7fb; }
+.stage-state { margin-left: auto; font-size: 24rpx; }

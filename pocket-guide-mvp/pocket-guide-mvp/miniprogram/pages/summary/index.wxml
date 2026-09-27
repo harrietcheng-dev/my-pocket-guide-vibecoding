@@ -1,0 +1,15 @@
+<view class="page" wx:if="{{draft}}">
+  <view class="title">确认需求摘要</view>
+  <view class="muted subtitle">确认后才会开始完整规划。</view>
+  <view class="card summary">
+    <view class="row"><text>城市与日期</text><text>{{draft.city}} · {{draft.startDate}} 至 {{draft.endDate}}</text></view>
+    <view class="row"><text>同行与预算</text><text>{{draft.partySize}} 人 · 整组 ¥{{draft.groupBudgetCny}}</text></view>
+    <view class="row"><text>兴趣</text><text>{{interestText}}</text></view>
+    <view class="row"><text>节奏</text><text>{{draft.pace}}</text></view>
+    <view class="row"><text>交通</text><text>{{transportText}}</text></view>
+    <view class="row"><text>每日时段</text><text>{{draft.dailyWindow}}</text></view>
+  </view>
+  <view class="notice">预算默认包含门票、餐饮和市内交通，不包含往返大交通与住宿。</view>
+  <button class="primary-button" loading="{{creating}}" bindtap="confirm">确认并生成</button>
+  <button class="secondary-button" bindtap="edit">返回修改</button>
+</view>

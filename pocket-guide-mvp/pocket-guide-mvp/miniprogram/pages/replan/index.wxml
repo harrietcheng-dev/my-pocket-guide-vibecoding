@@ -1,0 +1,19 @@
+<view class="page">
+  <view class="title">动态调整</view>
+  <view class="muted intro">已完成和正在进行的节点不会被改动，新方案确认后才会应用。</view>
+  <view class="card">
+    <view class="section-label">告诉光墩墩发生了什么</view>
+    <textarea class="textarea" value="{{message}}" bindinput="input" />
+    <view class="suggestions">
+      <view wx:for="{{suggestions}}" wx:key="*this" class="pill" data-value="{{item}}" bindtap="useSuggestion">{{item}}</view>
+    </view>
+    <button class="primary-button" loading="{{loading}}" bindtap="generate">生成调整方案</button>
+  </view>
+
+  <view wx:if="{{replan}}" class="card result">
+    <view class="section-title result-title">调整影响</view>
+    <view class="summary">{{replan.summary}}</view>
+    <view wx:for="{{replan.changes}}" wx:key="*this" class="change"><text>✓</text><text>{{item}}</text></view>
+    <button class="accent-button" bindtap="apply">确认应用</button>
+  </view>
+</view>

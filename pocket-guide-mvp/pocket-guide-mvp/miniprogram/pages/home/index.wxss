@@ -1,0 +1,11 @@
+.hero { background: linear-gradient(160deg, #eaf7fb, #ffffff 72%); }
+.avatar-shell { display: flex; align-items: center; margin-bottom: 24rpx; }
+.avatar-face { width: 112rpx; height: 112rpx; line-height: 112rpx; text-align: center; border-radius: 56rpx; color: #07517a; background: #fff8e8; border: 4rpx solid #07517a; font-size: 46rpx; font-weight: 700; }
+.avatar-state { margin-left: 24rpx; color: #07517a; font-weight: 600; }
+.hero-copy { margin-top: 16rpx; line-height: 1.7; }
+.current { display: flex; align-items: center; justify-content: space-between; margin-top: 24rpx; }
+.current-title { margin: 8rpx 0; font-size: 34rpx; font-weight: 700; }
+.arrow { color: #1677e8; font-size: 64rpx; }
+.city-row { display: flex; gap: 18rpx; }
+.city-card { flex: 1; padding: 24rpx 18rpx; background: #ffffff; border-radius: 20rpx; border: 1rpx solid #dce8ed; }
+.city-name { margin-bottom: 8rpx; color: #07517a; font-size: 32rpx; font-weight: 700; }

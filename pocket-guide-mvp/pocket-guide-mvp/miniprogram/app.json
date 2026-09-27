@@ -1,0 +1,40 @@
+{
+  "pages": [
+    "pages/home/index",
+    "pages/map/index",
+    "pages/trips/index",
+    "pages/profile/index",
+    "pages/create/index",
+    "pages/summary/index",
+    "pages/progress/index",
+    "pages/itinerary/index",
+    "pages/replan/index"
+  ],
+  "window": {
+    "navigationBarTitleText": "我的口袋导游",
+    "navigationBarBackgroundColor": "#EAF7FB",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#F7FBFD",
+    "backgroundTextStyle": "light"
+  },
+  "tabBar": {
+    "color": "#667085",
+    "selectedColor": "#1677E8",
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "white",
+    "list": [
+      { "pagePath": "pages/home/index", "text": "首页" },
+      { "pagePath": "pages/map/index", "text": "地图" },
+      { "pagePath": "pages/trips/index", "text": "行程" },
+      { "pagePath": "pages/profile/index", "text": "我的" }
+    ]
+  },
+  "permission": {
+    "scope.userLocation": {
+      "desc": "用于查看附近服务和手动刷新当前位置"
+    }
+  },
+  "requiredPrivateInfos": ["getLocation"],
+  "sitemapLocation": "sitemap.json",
+  "style": "v2"
+}

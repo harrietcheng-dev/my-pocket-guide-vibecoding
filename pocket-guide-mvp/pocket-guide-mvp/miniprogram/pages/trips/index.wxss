@@ -1,0 +1,4 @@
+.trip-list { margin-top: 24rpx; }
+.trip { display: flex; justify-content: space-between; margin-bottom: 20rpx; }
+.trip-title { margin-bottom: 8rpx; font-size: 34rpx; font-weight: 700; }
+.meta { margin-top: 14rpx; color: #07517a; font-size: 24rpx; }

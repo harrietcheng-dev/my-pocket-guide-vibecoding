@@ -1,0 +1,11 @@
+.map-page { position: relative; height: calc(100vh - 50px); }
+.map { width: 100%; height: 72vh; }
+.map-toolbar { display: flex; align-items: center; padding: 18rpx 20rpx; background: #ffffff; }
+.day-tabs { flex: 1; white-space: nowrap; }
+.day-tab { display: inline-block; margin-right: 12rpx; padding: 10rpx 22rpx; border-radius: 999rpx; color: #07517a; background: #eaf7fb; }
+.day-tab.active { color: #ffffff; background: #1677e8; }
+.locate { margin: 0 0 0 14rpx; color: #07517a; background: #fff8e8; }
+.node-strip { position: absolute; left: 0; right: 0; bottom: 18rpx; padding: 0 20rpx; white-space: nowrap; }
+.place-card { display: inline-flex; align-items: center; min-width: 300rpx; margin-right: 16rpx; padding: 22rpx; border-radius: 18rpx; background: #ffffff; box-shadow: 0 8rpx 28rpx rgba(7,81,122,.16); }
+.place-index { width: 48rpx; height: 48rpx; margin-right: 16rpx; line-height: 48rpx; text-align: center; color: #ffffff; background: #1677e8; border-radius: 24rpx; }
+.place-name { font-weight: 700; }

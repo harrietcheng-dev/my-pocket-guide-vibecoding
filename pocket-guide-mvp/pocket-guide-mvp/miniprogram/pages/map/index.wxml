@@ -1,0 +1,18 @@
+<view class="map-page">
+  <view wx:if="{{trip}}" class="map-toolbar">
+    <scroll-view scroll-x class="day-tabs">
+      <view wx:for="{{trip.days}}" wx:key="dayIndex" class="day-tab {{selectedDay === index ? 'active' : ''}}" data-index="{{index}}" bindtap="selectDay">{{item.dateLabel}}</view>
+    </scroll-view>
+    <button size="mini" class="locate" bindtap="locate">我的位置</button>
+  </view>
+  <map wx:if="{{trip}}" class="map" latitude="{{latitude}}" longitude="{{longitude}}" scale="12" markers="{{markers}}" polyline="{{polyline}}" show-location></map>
+  <view wx:if="{{trip}}" class="node-strip">
+    <scroll-view scroll-x>
+      <view wx:for="{{trip.days[selectedDay].nodes}}" wx:key="id" class="place-card">
+        <view class="place-index">{{index + 1}}</view>
+        <view><view class="place-name">{{item.name}}</view><view class="muted">{{item.time}} · {{item.type}}</view></view>
+      </view>
+    </scroll-view>
+  </view>
+  <view wx:else class="empty">还没有当前行程，请先从首页创建。</view>
+</view>

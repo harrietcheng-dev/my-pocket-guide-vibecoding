@@ -1,0 +1,43 @@
+<view class="page">
+  <view class="title">创建行程</view>
+  <view class="muted subtitle">先填写关键条件，生成前还会再次确认。</view>
+
+  <view class="form card">
+    <view class="label">目的城市</view>
+    <input class="input" value="{{form.city}}" data-field="city" bindinput="input" />
+    <view class="grid">
+      <view>
+        <view class="label">开始日期</view>
+        <input class="input" value="{{form.startDate}}" data-field="startDate" bindinput="input" />
+      </view>
+      <view>
+        <view class="label">结束日期</view>
+        <input class="input" value="{{form.endDate}}" data-field="endDate" bindinput="input" />
+      </view>
+    </view>
+    <view class="grid">
+      <view>
+        <view class="label">同行人数</view>
+        <input class="input" type="number" value="{{form.partySize}}" data-field="partySize" bindinput="input" />
+      </view>
+      <view>
+        <view class="label">整组预算</view>
+        <input class="input" type="number" value="{{form.groupBudgetCny}}" data-field="groupBudgetCny" bindinput="input" />
+      </view>
+    </view>
+
+    <view class="label">兴趣</view>
+    <view>
+      <view wx:for="{{interestOptions}}" wx:key="value" class="choice {{item.selected ? 'active' : ''}}" data-value="{{item.value}}" bindtap="toggleInterest">{{item.value}}</view>
+    </view>
+
+    <view class="label">旅行节奏</view>
+    <view>
+      <view wx:for="{{paceOptions}}" wx:key="*this" class="choice {{form.pace === item ? 'active' : ''}}" data-value="{{item}}" bindtap="pickPace">{{item}}</view>
+    </view>
+
+    <view class="label">补充要求</view>
+    <textarea class="textarea" placeholder="例如少走路、需要午休" data-field="freeText" bindinput="input" />
+  </view>
+  <button class="primary-button" bindtap="next">查看需求摘要</button>
+</view>

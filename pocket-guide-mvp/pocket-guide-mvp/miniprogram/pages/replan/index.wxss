@@ -1,0 +1,9 @@
+.intro { margin: 12rpx 0 28rpx; line-height: 1.6; }
+.section-label { margin-bottom: 16rpx; color: #07517a; font-weight: 700; }
+.textarea { box-sizing: border-box; width: 100%; min-height: 160rpx; padding: 20rpx; border-radius: 16rpx; background: #f4f7f9; border: 1rpx solid #d5dce0; }
+.suggestions { margin-top: 14rpx; }
+.result { margin-top: 22rpx; }
+.result-title { margin-top: 0; }
+.summary { margin-bottom: 18rpx; font-weight: 600; }
+.change { display: flex; gap: 16rpx; padding: 16rpx 0; border-bottom: 1rpx solid #edf1f3; }
+.change text:first-child { color: #1677e8; }

@@ -1,0 +1,12 @@
+<view class="page progress-page">
+  <view class="avatar">光</view>
+  <view class="title">正在为你规划</view>
+  <view class="muted">已获得的结果会被保留，服务异常时也不会让你从头开始。</view>
+  <view class="stage-list card">
+    <view wx:for="{{stages}}" wx:key="label" class="stage {{item.state}}">
+      <view class="dot">{{item.state === 'done' ? '✓' : index + 1}}</view>
+      <view>{{item.label}}</view>
+      <view class="stage-state">{{item.state === 'done' ? '已完成' : item.state === 'active' ? '进行中' : '等待'}}</view>
+    </view>
+  </view>
+</view>

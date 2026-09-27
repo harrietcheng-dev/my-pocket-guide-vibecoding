@@ -1,0 +1,8 @@
+.subtitle { margin: 10rpx 0 26rpx; }
+.form { padding-bottom: 34rpx; }
+.label { margin: 26rpx 0 12rpx; color: #07517a; font-weight: 600; }
+.input, .textarea { box-sizing: border-box; width: 100%; padding: 20rpx; border-radius: 14rpx; background: #f4f7f9; border: 1rpx solid #d5dce0; }
+.textarea { min-height: 140rpx; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18rpx; }
+.choice { display: inline-block; margin: 0 12rpx 12rpx 0; padding: 12rpx 22rpx; border: 2rpx solid #73c8d8; border-radius: 999rpx; color: #07517a; }
+.choice.active { color: #ffffff; background: #1677e8; border-color: #1677e8; }

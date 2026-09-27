@@ -1,0 +1,41 @@
+<view class="page" wx:if="{{trip}}">
+  <view class="topline">
+    <view>
+      <view class="title">{{trip.title}}</view>
+      <view class="muted">{{trip.constraints.partySize}} 人 · 预算 ¥{{trip.constraints.groupBudgetCny}} · 版本 {{trip.version}}</view>
+    </view>
+    <view class="status">待出发</view>
+  </view>
+
+  <view wx:if="{{trip.lastAdjustment}}" class="adjusted">已调整：{{trip.lastAdjustment}}</view>
+
+  <scroll-view scroll-x class="day-tabs">
+    <view wx:for="{{trip.days}}" wx:key="dayIndex" class="day-tab {{selectedDay === index ? 'active' : ''}}" data-index="{{index}}" bindtap="selectDay">{{item.dateLabel}}</view>
+  </scroll-view>
+
+  <view class="card day-card">
+    <view class="day-summary">
+      <text>预计步行 {{trip.days[selectedDay].walkDistanceKm}} km</text>
+      <text>{{trip.days[selectedDay].nodes.length}} 个节点</text>
+    </view>
+    <view wx:for="{{trip.days[selectedDay].nodes}}" wx:key="id" class="node">
+      <view class="time">{{item.time}}</view>
+      <view class="timeline"><view class="timeline-dot"></view></view>
+      <view class="node-body">
+        <view class="node-head"><text>{{item.name}}</text><text class="pill">{{item.type}}</text></view>
+        <view class="muted">{{item.reason}}</view>
+        <view class="meta">停留 {{item.durationMin}} 分钟 · ¥{{item.costRange[0]}}–{{item.costRange[1]}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="card budget">
+    <view class="section-title budget-title">费用估算</view>
+    <view>整组约 ¥{{trip.costSummary.total[0]}}–{{trip.costSummary.total[1]}}</view>
+    <view class="muted">价格为区间估算，临时公告请出发前复核。</view>
+  </view>
+
+  <button class="primary-button" bindtap="openMap">查看地图</button>
+  <button class="accent-button" bindtap="replan">途中动态调整</button>
+  <button wx:if="{{trip.previousSnapshot}}" class="secondary-button" bindtap="undo">撤销最近调整</button>
+</view>

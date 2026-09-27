@@ -1,0 +1,9 @@
+.profile-head { display: flex; align-items: center; }
+.avatar { width: 92rpx; height: 92rpx; margin-right: 22rpx; line-height: 92rpx; text-align: center; color: #07517a; background: #fff8e8; border: 3rpx solid #07517a; border-radius: 46rpx; font-size: 38rpx; font-weight: 700; }
+.profile-title { font-size: 34rpx; font-weight: 700; }
+.menu { margin-top: 22rpx; }
+.menu-item { display: flex; align-items: center; justify-content: space-between; padding: 24rpx 0; border-bottom: 1rpx solid #edf1f3; }
+.menu-item:last-child { border-bottom: 0; }
+.menu-title { font-weight: 600; }
+.desc { margin-top: 6rpx; font-size: 23rpx; }
+.arrow { color: #98a2b3; font-size: 48rpx; }

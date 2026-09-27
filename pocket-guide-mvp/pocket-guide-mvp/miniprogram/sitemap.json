@@ -1,0 +1,4 @@
+{
+  "desc": "我的口袋导游页面索引",
+  "rules": [{ "action": "allow", "page": "*" }]
+}
