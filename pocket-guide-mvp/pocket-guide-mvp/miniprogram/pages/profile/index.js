@@ -2,7 +2,14 @@ const travelLibrary = require('../../utils/travel-library')
 
 Page({
   data: { tab: 'favorites', favorites: [], notes: [] },
-  onShow() { this.refreshLibrary() },
+  onShow() {
+    const initialTab = wx.getStorageSync('profileInitialTab')
+    if (initialTab) {
+      this.setData({ tab: initialTab })
+      wx.removeStorageSync('profileInitialTab')
+    }
+    this.refreshLibrary()
+  },
   refreshLibrary() {
     const formatDate = (value) => value ? String(value).slice(0, 10) : ''
     this.setData({
