@@ -1,4 +1,5 @@
 const api = require('../../utils/api')
+const travelLibrary = require('../../utils/travel-library')
 
 Page({
   data: {
@@ -18,7 +19,8 @@ Page({
     editOperations: [],
     editForm: null,
     editPreview: null,
-    editSubmitting: false
+    editSubmitting: false,
+    noteEditor: null
   },
   onShow() {
     this.loadTrips()
@@ -72,8 +74,16 @@ Page({
   decorateTrip(trip) {
     const labels = { ACTIVE: '行程中', READY: '待出发', CONFIRMED: '待生成', DRAFT: '草稿', COMPLETED: '已完成', CANCELLED: '已取消' }
     const constraints = trip.constraints || {}
+    const days = (trip.days || []).map((day) => ({
+      ...day,
+      nodes: (day.nodes || []).map((node) => {
+        const note = travelLibrary.getNote(trip.id, node.id)
+        return { ...node, isFavorite: travelLibrary.isFavorite(node), travelNote: note ? note.text : '', noteId: note ? note.id : '' }
+      })
+    }))
     return {
       ...trip,
+      days,
       stateLabel: labels[trip.state] || trip.state,
       stateClass: String(trip.state || '').toLowerCase(),
       dateRange: constraints.startDate && constraints.endDate ? `${constraints.startDate} 至 ${constraints.endDate}` : '日期待定'
@@ -101,7 +111,7 @@ Page({
     const trip = this.data.trips.find((item) => item.id === id)
     if (!trip) return
     wx.setStorageSync('lastViewedTripId', id)
-    this.setData({ trip, selectedTripId: id, selectedDay: 0, view: 'overview', editPreview: null }, () => this.drawDay(0))
+    this.setData({ trip, selectedTripId: id, selectedDay: 0, view: 'overview', editPreview: null, noteEditor: null }, () => this.drawDay(0))
   },
   replaceTripInList(trip) {
     const decorated = this.decorateTrip(trip)
@@ -115,13 +125,73 @@ Page({
     this.setData({ view: event.currentTarget.dataset.view })
   },
   selectDay(event) {
-    this.setData({ editForm: null, editPreview: null })
+    this.setData({ editForm: null, editPreview: null, noteEditor: null })
     this.drawDay(Number(event.currentTarget.dataset.index))
+  },
+  refreshLibraryMarks() {
+    const trips = this.data.trips.map((item) => this.decorateTrip(item))
+    const trip = trips.find((item) => item.id === this.data.selectedTripId) || this.data.trip
+    this.setData({ trips, trip, filteredTrips: this.filterTrips(trips, this.data.tripFilter) })
+  },
+  findSelectedNode(nodeId) {
+    if (!this.data.trip || !this.data.trip.days[this.data.selectedDay]) return null
+    return this.data.trip.days[this.data.selectedDay].nodes.find((item) => item.id === nodeId) || null
+  },
+  toggleNodeFavorite(event) {
+    const node = this.findSelectedNode(event.currentTarget.dataset.id)
+    if (!node) return
+    const result = travelLibrary.toggleFavorite(node, this.data.trip)
+    this.refreshLibraryMarks()
+    wx.showToast({ title: result.saved ? '已加入收藏' : '已取消收藏', icon: result.saved ? 'success' : 'none' })
+  },
+  openNodeNote(event) {
+    const node = this.findSelectedNode(event.currentTarget.dataset.id)
+    if (!node || node.status !== 'COMPLETED') return wx.showToast({ title: '完成参观后才能写笔记', icon: 'none' })
+    this.setData({ noteEditor: { nodeId: node.id, placeName: node.name, value: node.travelNote || '', noteId: node.noteId || '' } })
+  },
+  inputNodeNote(event) {
+    this.setData({ 'noteEditor.value': event.detail.value })
+  },
+  cancelNodeNote() { this.setData({ noteEditor: null }) },
+  saveNodeNote() {
+    const editor = this.data.noteEditor
+    if (!editor) return
+    try {
+      travelLibrary.saveNote({
+        tripId: this.data.trip.id,
+        tripTitle: this.data.trip.title,
+        nodeId: editor.nodeId,
+        placeName: editor.placeName,
+        text: editor.value
+      })
+      this.setData({ noteEditor: null })
+      this.refreshLibraryMarks()
+      wx.showToast({ title: '旅行笔记已保存', icon: 'success' })
+    } catch (error) {
+      wx.showToast({ title: error.message, icon: 'none' })
+    }
+  },
+  deleteNodeNote() {
+    const editor = this.data.noteEditor
+    if (!editor || !editor.noteId) return
+    wx.showModal({
+      title: '删除这条笔记？',
+      content: '删除后无法恢复。',
+      confirmText: '删除',
+      confirmColor: '#d92d20',
+      success: ({ confirm }) => {
+        if (!confirm) return
+        travelLibrary.removeNote(editor.noteId)
+        this.setData({ noteEditor: null })
+        this.refreshLibraryMarks()
+        wx.showToast({ title: '笔记已删除', icon: 'success' })
+      }
+    })
   },
   startEditing() {
     if (!this.data.trip || ['COMPLETED', 'CANCELLED'].includes(this.data.trip.state)) return
     this.originalTrip = JSON.parse(JSON.stringify(this.data.trip))
-    this.setData({ editing: true, view: 'overview', editOperations: [], editForm: null, editPreview: null })
+    this.setData({ editing: true, view: 'overview', editOperations: [], editForm: null, editPreview: null, noteEditor: null })
   },
   cancelEditing() {
     this.setData({

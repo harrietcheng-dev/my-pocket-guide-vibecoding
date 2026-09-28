@@ -56,6 +56,19 @@
           <view class="node-head"><text>{{item.name}}</text><text class="pill">{{item.type}}</text></view>
           <view class="muted node-reason">{{item.reason}}</view>
           <view class="meta">停留 {{item.durationMin}} 分钟 · ¥{{item.costRange[0]}}–{{item.costRange[1]}}</view>
+          <view wx:if="{{!editing}}" class="library-actions">
+            <text class="favorite-action {{item.isFavorite ? 'saved' : ''}}" data-id="{{item.id}}" bindtap="toggleNodeFavorite">{{item.isFavorite ? '★ 已收藏' : '☆ 收藏地点'}}</text>
+            <text wx:if="{{item.status === 'COMPLETED'}}" class="note-action" data-id="{{item.id}}" bindtap="openNodeNote">{{item.travelNote ? '编辑笔记' : '写旅行笔记'}}</text>
+          </view>
+          <view wx:if="{{!editing && item.travelNote}}" class="note-preview"><text>旅行笔记</text>{{item.travelNote}}</view>
+          <view wx:if="{{noteEditor && noteEditor.nodeId === item.id}}" class="note-editor">
+            <view class="note-editor-title">记录在 {{item.name}} 的见闻</view>
+            <textarea value="{{noteEditor.value}}" maxlength="500" auto-height data-node-id="{{item.id}}" bindinput="inputNodeNote" placeholder="写下印象、见闻或想留给未来自己的话…" />
+            <view class="note-editor-footer">
+              <text wx:if="{{noteEditor.noteId}}" class="delete-note" bindtap="deleteNodeNote">删除笔记</text>
+              <view class="note-editor-buttons"><button bindtap="cancelNodeNote">取消</button><button class="save-note" bindtap="saveNodeNote">保存</button></view>
+            </view>
+          </view>
           <view wx:if="{{editing && item.status === 'PLANNED' && !item.draftOnly}}" class="node-edit-actions">
             <text wx:if="{{index > 0 && trip.days[selectedDay].nodes[index - 1].status === 'PLANNED'}}" data-index="{{index}}" data-delta="-1" bindtap="moveEditNode">上移</text>
             <text wx:if="{{index < trip.days[selectedDay].nodes.length - 1}}" data-index="{{index}}" data-delta="1" bindtap="moveEditNode">下移</text>

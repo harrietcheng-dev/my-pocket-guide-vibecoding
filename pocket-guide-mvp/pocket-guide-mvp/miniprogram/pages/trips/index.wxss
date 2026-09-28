@@ -35,6 +35,17 @@
 .node-head { display: flex; align-items: center; justify-content: space-between; font-weight: 700; }
 .node-reason { margin-top: 6rpx; }
 .meta { margin-top: 10rpx; color: #07517a; font-size: 23rpx; }
+.library-actions { display: flex; gap: 28rpx; margin-top: 15rpx; font-size: 22rpx; font-weight: 700; }
+.favorite-action { color: #667085; }.favorite-action.saved { color: #e57919; }.note-action { color: #1677e8; }
+.note-preview { margin-top: 15rpx; padding: 16rpx; border-left: 5rpx solid #73c8d8; border-radius: 0 14rpx 14rpx 0; color: #475467; background: #f2fafb; font-size: 22rpx; line-height: 1.6; }
+.note-preview text { display: block; margin-bottom: 5rpx; color: #087a94; font-size: 19rpx; font-weight: 800; }
+.note-editor { margin-top: 16rpx; padding: 18rpx; border: 1rpx solid #cfe4ee; border-radius: 18rpx; background: #f8fcfd; }
+.note-editor-title { color: #07517a; font-size: 23rpx; font-weight: 800; }
+.note-editor textarea { box-sizing: border-box; width: 100%; min-height: 150rpx; margin-top: 14rpx; padding: 16rpx; border-radius: 14rpx; color: #344054; background: #fff; font-size: 23rpx; line-height: 1.55; }
+.note-editor-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 14rpx; }
+.delete-note { color: #d92d20; font-size: 21rpx; }.note-editor-buttons { display: flex; gap: 10rpx; margin-left: auto; }
+.note-editor-buttons button { height: 58rpx; margin: 0; padding: 0 24rpx; border-radius: 14rpx; line-height: 58rpx; color: #475467; background: #eef2f5; font-size: 21rpx; }
+.note-editor-buttons .save-note { color: #fff; background: #1677e8; }
 .node-edit-actions { display: flex; gap: 24rpx; margin-top: 16rpx; color: #1677e8; font-size: 22rpx; font-weight: 700; }
 .node-edit-actions .danger { color: #d92d20; }
 .locked-node { margin-top: 14rpx; color: #98a2b3; font-size: 21rpx; }
