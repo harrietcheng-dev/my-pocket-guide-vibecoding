@@ -26,6 +26,7 @@ module.exports = {
       : request('/trips', 'POST', { constraints: data })
     return operation.then((trip) => {
       wx.setStorageSync('currentTripId', trip.id)
+      wx.setStorageSync('companionTripId', trip.id)
       return trip
     })
   },
@@ -37,6 +38,9 @@ module.exports = {
   },
   checkIn(id, nodeId, payload = { manual: true }) {
     return useMock ? mock.checkIn(id, nodeId, payload) : request(`/trips/${id}/nodes/${nodeId}/check-in`, 'POST', payload)
+  },
+  completeNode(id, nodeId) {
+    return useMock ? mock.completeNode(id, nodeId) : request(`/trips/${id}/nodes/${nodeId}/complete`, 'POST')
   },
   getGuide(placeId, name, depth = 'short') {
     return useMock ? mock.getGuide(placeId, name, depth) : request(`/places/${placeId}/guide?name=${encodeURIComponent(name || '')}&depth=${depth}`)
@@ -52,6 +56,15 @@ module.exports = {
   },
   listTrips() {
     return useMock ? mock.listTrips() : request('/trips')
+  },
+  cancelTrip(id) {
+    return useMock ? mock.cancelTrip(id) : request(`/trips/${id}/cancel`, 'POST')
+  },
+  previewEdits(id, operations) {
+    return useMock ? mock.previewEdits(id, operations) : request(`/trips/${id}/edits`, 'POST', { operations })
+  },
+  confirmEdits(id, editId) {
+    return useMock ? mock.confirmEdits(id, editId) : request(`/trips/${id}/edits/${editId}/confirm`, 'POST')
   },
   createReplan(id, message) {
     return useMock ? mock.createReplan(id, message) : request(`/trips/${id}/replans`, 'POST', { message })

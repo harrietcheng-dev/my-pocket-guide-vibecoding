@@ -9,17 +9,19 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from . import db
-from .planner import apply_replan, build_replan, build_trip
+from .planner import apply_replan, build_replan, build_trip, cancel_trip, check_in_trip, complete_trip_node, preview_trip_edits
 from .schemas import (
     AnonymousSessionRequest,
     CheckInRequest,
     ConversationMessageRequest,
     CreateTripRequest,
     ReplanRequest,
+    TripEditRequest,
 )
 
 
 REPLANS: dict[str, dict] = {}
+EDITS: dict[str, dict] = {}
 
 
 @asynccontextmanager
@@ -91,25 +93,32 @@ def generate_trip(trip_id: str) -> dict:
 @app.post("/api/v1/trips/{trip_id}/start")
 def start_trip(trip_id: str) -> dict:
     trip = require_trip(trip_id)
+    if trip.get("state") in {"COMPLETED", "CANCELLED"}:
+        raise HTTPException(status_code=409, detail="已结束或取消的行程不能重新开始")
+    require_no_other_active_trip(trip_id)
     trip["state"] = "ACTIVE"
     return db.save_trip(trip)
+
+
+@app.post("/api/v1/trips/{trip_id}/cancel")
+def cancel_existing_trip(trip_id: str) -> dict:
+    trip = require_trip(trip_id)
+    try:
+        return db.save_trip(cancel_trip(trip))
+    except ValueError as error:
+        raise HTTPException(status_code=409, detail=str(error)) from error
 
 
 @app.post("/api/v1/trips/{trip_id}/nodes/{node_id}/check-in")
 def check_in_node(trip_id: str, node_id: str, payload: CheckInRequest) -> dict:
     trip = require_trip(trip_id)
-    checked_node = None
-    for day in trip.get("days", []):
-        for node in day.get("nodes", []):
-            if node.get("id") == node_id:
-                node["status"] = "IN_PROGRESS"
-                node["checkInMode"] = "MANUAL" if payload.manual else "LOCATION"
-                checked_node = node
-            elif node.get("status") == "IN_PROGRESS":
-                node["status"] = "PLANNED"
-    if not checked_node:
-        raise HTTPException(status_code=404, detail="行程节点不存在")
-    trip["state"] = "ACTIVE"
+    try:
+        require_no_other_active_trip(trip_id)
+        trip, checked_node = check_in_trip(trip, node_id, payload.manual)
+    except LookupError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+    except ValueError as error:
+        raise HTTPException(status_code=409, detail=str(error)) from error
     db.save_trip(trip)
     return {
         "trip": trip,
@@ -118,12 +127,61 @@ def check_in_node(trip_id: str, node_id: str, payload: CheckInRequest) -> dict:
     }
 
 
+@app.post("/api/v1/trips/{trip_id}/nodes/{node_id}/complete")
+def complete_node(trip_id: str, node_id: str) -> dict:
+    trip = require_trip(trip_id)
+    try:
+        trip, completed_node = complete_trip_node(trip, node_id)
+    except LookupError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+    except ValueError as error:
+        raise HTTPException(status_code=409, detail=str(error)) from error
+    db.save_trip(trip)
+    return {"trip": trip, "node": completed_node}
+
+
 @app.post("/api/v1/trips/{trip_id}/replans", status_code=201)
 def create_replan(trip_id: str, payload: ReplanRequest) -> dict:
     trip = require_trip(trip_id)
+    if trip.get("state") in {"COMPLETED", "CANCELLED"}:
+        raise HTTPException(status_code=409, detail="已结束或取消的行程不能调整")
     replan = build_replan(trip, payload.message)
     REPLANS[replan["id"]] = replan
     return replan
+
+
+@app.post("/api/v1/trips/{trip_id}/edits", status_code=201)
+def preview_edits(trip_id: str, payload: TripEditRequest) -> dict:
+    trip = require_trip(trip_id)
+    try:
+        candidate, changes = preview_trip_edits(trip, [operation.model_dump() for operation in payload.operations])
+    except LookupError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+    except ValueError as error:
+        raise HTTPException(status_code=409, detail=str(error)) from error
+    edit_id = str(uuid4())
+    EDITS[edit_id] = {"tripId": trip_id, "baseVersion": trip.get("version"), "candidate": candidate}
+    return {
+        "id": edit_id,
+        "tripId": trip_id,
+        "summary": candidate["lastAdjustment"],
+        "changes": changes,
+        "affectedDays": sorted({operation.dayIndex for operation in payload.operations}),
+        "costBefore": trip.get("costSummary", {}).get("total", [0, 0]),
+        "costAfter": candidate.get("costSummary", {}).get("total", [0, 0]),
+    }
+
+
+@app.post("/api/v1/trips/{trip_id}/edits/{edit_id}/confirm")
+def confirm_edits(trip_id: str, edit_id: str) -> dict:
+    edit = EDITS.get(edit_id)
+    if not edit or edit["tripId"] != trip_id:
+        raise HTTPException(status_code=404, detail="编辑方案不存在")
+    current = require_trip(trip_id)
+    if current.get("version") != edit["baseVersion"]:
+        raise HTTPException(status_code=409, detail="行程已发生变化，请重新编辑")
+    EDITS.pop(edit_id, None)
+    return db.save_trip(edit["candidate"])
 
 
 @app.post("/api/v1/trips/{trip_id}/replans/{replan_id}/apply")
@@ -174,8 +232,17 @@ def nearby(category: str = "休息", latitude: float | None = None, longitude: f
         "医院": [("北京医院", "正规医院", 2100), ("协和医院东单院区", "正规医院", 2800)],
         "交通": [("东华门公交站", "公交站", 410), ("金鱼胡同地铁站", "地铁站", 960)],
     }
+    base_latitude = latitude if latitude is not None else 39.9180
+    base_longitude = longitude if longitude is not None else 116.3970
     items = [
-        {"id": f"{category}-{index}", "name": item[0], "type": item[1], "distanceM": item[2]}
+        {
+            "id": f"{category}-{index}",
+            "name": item[0],
+            "type": item[1],
+            "distanceM": item[2],
+            "latitude": round(base_latitude + index * 0.0012, 6),
+            "longitude": round(base_longitude + index * 0.0015, 6),
+        }
         for index, item in enumerate(samples.get(category, samples["休息"]), start=1)
     ]
     return {"category": category, "items": items, "locationUsed": latitude is not None and longitude is not None}
@@ -223,3 +290,9 @@ def require_trip(trip_id: str) -> dict:
     if not trip:
         raise HTTPException(status_code=404, detail="行程不存在")
     return trip
+
+
+def require_no_other_active_trip(trip_id: str) -> None:
+    active = next((item for item in db.list_trips() if item.get("state") == "ACTIVE" and item.get("id") != trip_id), None)
+    if active:
+        raise HTTPException(status_code=409, detail=f"“{active.get('title', '另一行程')}”正在进行，请先完成或取消它")

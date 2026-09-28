@@ -1,8 +1,12 @@
 .subtitle { margin: 10rpx 0 26rpx; }
 .form { padding-bottom: 34rpx; }
+.form-error { margin-bottom: 20rpx; padding: 18rpx 20rpx; border-radius: 15rpx; color: #b42318; background: #fef3f2; font-size: 23rpx; }
+.form-section-title { color: #1f2937; font-size: 30rpx; font-weight: 800; }.form-section-title.divided { margin-top: 34rpx; padding-top: 30rpx; border-top: 1rpx solid #e6edf0; }
 .label { margin: 26rpx 0 12rpx; color: #07517a; font-weight: 600; }
-.input, .textarea { box-sizing: border-box; width: 100%; padding: 20rpx; border-radius: 14rpx; background: #f4f7f9; border: 1rpx solid #d5dce0; }
+.input, .textarea, .picker-field { box-sizing: border-box; width: 100%; min-height: 78rpx; padding: 20rpx; border: 1rpx solid #d5dce0; border-radius: 14rpx; background: #f4f7f9; }
+.picker-field { color: #1f2937; line-height: 38rpx; }
 .textarea { min-height: 140rpx; }
 .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18rpx; }
+.derived-tip { margin-top: 12rpx; color: #667085; font-size: 21rpx; line-height: 1.5; }
 .choice { display: inline-block; margin: 0 12rpx 12rpx 0; padding: 12rpx 22rpx; border: 2rpx solid #73c8d8; border-radius: 999rpx; color: #07517a; }
 .choice.active { color: #ffffff; background: #1677e8; border-color: #1677e8; }

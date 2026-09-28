@@ -33,14 +33,25 @@ def test_full_mvp_flow(tmp_path, monkeypatch):
         assert trip["title"] == "北京4日游"
         assert len(trip["days"]) == 4
 
+        first_node = trip["days"][0]["nodes"][0]
         node = trip["days"][0]["nodes"][1]
+        first_check_in = client.post(
+            f"/api/v1/trips/{trip['id']}/nodes/{first_node['id']}/check-in",
+            json={"manual": True},
+        )
+        assert first_check_in.status_code == 200
         checked_in = client.post(
             f"/api/v1/trips/{trip['id']}/nodes/{node['id']}/check-in",
             json={"manual": True},
         )
         assert checked_in.status_code == 200
         assert checked_in.json()["node"]["status"] == "IN_PROGRESS"
+        assert checked_in.json()["trip"]["days"][0]["nodes"][0]["status"] == "COMPLETED"
         assert checked_in.json()["guide"]["durationSec"] >= 30
+
+        completed = client.post(f"/api/v1/trips/{trip['id']}/nodes/{node['id']}/complete")
+        assert completed.status_code == 200
+        assert completed.json()["node"]["status"] == "COMPLETED"
 
         answer = client.post(
             f"/api/v1/conversations/{trip['id']}/messages",
@@ -52,6 +63,8 @@ def test_full_mvp_flow(tmp_path, monkeypatch):
         nearby = client.get("/api/v1/nearby", params={"category": "医院"})
         assert nearby.status_code == 200
         assert nearby.json()["items"][0]["type"] == "正规医院"
+        assert isinstance(nearby.json()["items"][0]["latitude"], float)
+        assert isinstance(nearby.json()["items"][0]["longitude"], float)
 
         replan = client.post(
             f"/api/v1/trips/{trip['id']}/replans",

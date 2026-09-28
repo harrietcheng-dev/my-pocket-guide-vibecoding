@@ -1,16 +1,43 @@
 <view class="page trips-page">
   <block wx:if="{{trip}}">
+    <view class="trip-library">
+      <view class="library-head">
+        <view><view class="section-title">我的行程</view><view class="muted">共 {{trips.length}} 段旅程</view></view>
+        <view class="new-trip-link" bindtap="create">＋ 新行程</view>
+      </view>
+      <scroll-view scroll-x class="trip-filters">
+        <view class="trip-filter {{tripFilter === 'ALL' ? 'active' : ''}}" data-filter="ALL" bindtap="selectTripFilter">全部 {{trips.length}}</view>
+        <view class="trip-filter {{tripFilter === 'ACTIVE' ? 'active' : ''}}" data-filter="ACTIVE" bindtap="selectTripFilter">进行中 {{tripCounts.active}}</view>
+        <view class="trip-filter {{tripFilter === 'UPCOMING' ? 'active' : ''}}" data-filter="UPCOMING" bindtap="selectTripFilter">待出发 {{tripCounts.upcoming}}</view>
+        <view class="trip-filter {{tripFilter === 'COMPLETED' ? 'active' : ''}}" data-filter="COMPLETED" bindtap="selectTripFilter">已完成 {{tripCounts.completed}}</view>
+        <view class="trip-filter {{tripFilter === 'CANCELLED' ? 'active' : ''}}" data-filter="CANCELLED" bindtap="selectTripFilter">已取消 {{tripCounts.cancelled}}</view>
+      </scroll-view>
+      <scroll-view scroll-x class="trip-switcher">
+        <view wx:for="{{filteredTrips}}" wx:key="id" class="trip-switch-card {{selectedTripId === item.id ? 'selected' : ''}}" data-id="{{item.id}}" bindtap="selectTrip">
+          <view class="trip-switch-top"><text class="trip-switch-title">{{item.title}}</text><text class="mini-status {{item.stateClass}}">{{item.stateLabel}}</text></view>
+          <view class="trip-switch-date">{{item.dateRange}}</view>
+        </view>
+        <view wx:if="{{!filteredTrips.length}}" class="trip-filter-empty">该分类暂无行程</view>
+      </scroll-view>
+    </view>
+
     <view class="trip-head">
       <view>
         <view class="title">{{trip.title}}</view>
-        <view class="muted">{{trip.constraints.startDate}} 至 {{trip.constraints.endDate}}</view>
+        <view class="muted">{{trip.dateRange}}</view>
       </view>
-      <view class="status">{{trip.state === 'READY' ? '待出发' : trip.state}}</view>
+      <view class="status {{trip.stateClass}}">{{trip.stateLabel}}</view>
     </view>
 
     <view class="view-tabs">
       <view class="view-tab {{view === 'overview' ? 'active' : ''}}" data-view="overview" bindtap="switchView">行程总览</view>
       <view class="view-tab {{view === 'route' ? 'active' : ''}}" data-view="route" bindtap="switchView">地图路线</view>
+    </view>
+
+    <view wx:if="{{!editing && trip.state !== 'COMPLETED' && trip.state !== 'CANCELLED'}}" class="edit-entry" bindtap="startEditing" aria-role="button">编辑行程节点</view>
+    <view wx:if="{{editing}}" class="edit-toolbar">
+      <view><view class="edit-title">编辑模式</view><view class="muted">仅可修改尚未开始的节点，确认前不会保存</view></view>
+      <view class="edit-cancel" bindtap="cancelEditing">取消</view>
     </view>
 
     <scroll-view scroll-x class="day-tabs">
@@ -22,18 +49,53 @@
         <text>预计步行 {{trip.days[selectedDay].walkDistanceKm}} km</text>
         <text>{{trip.days[selectedDay].nodes.length}} 个节点</text>
       </view>
-      <view wx:for="{{trip.days[selectedDay].nodes}}" wx:key="id" class="node">
+      <view wx:for="{{trip.days[selectedDay].nodes}}" wx:key="id" class="node {{item.draftOnly ? 'draft-node' : ''}}">
         <view class="time">{{item.time}}</view>
         <view class="timeline"><view class="timeline-dot"></view></view>
         <view class="node-body">
           <view class="node-head"><text>{{item.name}}</text><text class="pill">{{item.type}}</text></view>
           <view class="muted node-reason">{{item.reason}}</view>
           <view class="meta">停留 {{item.durationMin}} 分钟 · ¥{{item.costRange[0]}}–{{item.costRange[1]}}</view>
+          <view wx:if="{{editing && item.status === 'PLANNED' && !item.draftOnly}}" class="node-edit-actions">
+            <text wx:if="{{index > 0 && trip.days[selectedDay].nodes[index - 1].status === 'PLANNED'}}" data-index="{{index}}" data-delta="-1" bindtap="moveEditNode">上移</text>
+            <text wx:if="{{index < trip.days[selectedDay].nodes.length - 1}}" data-index="{{index}}" data-delta="1" bindtap="moveEditNode">下移</text>
+            <text data-index="{{index}}" bindtap="openReplaceNode">替换</text>
+            <text class="danger" data-index="{{index}}" bindtap="deleteEditNode">删除</text>
+          </view>
+          <view wx:elif="{{editing && item.draftOnly}}" class="node-edit-actions"><text class="danger" data-index="{{index}}" bindtap="removeDraftAddition">撤销新增</text></view>
+          <view wx:elif="{{editing && item.status !== 'PLANNED'}}" class="locked-node">已开始的节点不可修改</view>
         </view>
       </view>
+      <button wx:if="{{editing}}" class="add-node-button" bindtap="openAddNode">＋ 添加一个地点</button>
     </view>
 
-    <view wx:else class="route-panel">
+    <view wx:if="{{editForm}}" class="card edit-form-card">
+      <view class="section-title">{{editForm.mode === 'add' ? '添加地点' : '替换地点'}}</view>
+      <view class="edit-grid">
+        <view class="edit-field wide"><text>地点名称</text><input value="{{editForm.name}}" data-field="name" bindinput="inputEditForm" placeholder="例如中国美术馆" /></view>
+        <view class="edit-field"><text>类型</text><input value="{{editForm.type}}" data-field="type" bindinput="inputEditForm" /></view>
+        <view class="edit-field"><text>停留分钟</text><input type="number" value="{{editForm.durationMin}}" data-field="durationMin" bindinput="inputEditForm" /></view>
+        <view class="edit-field"><text>最低费用</text><input type="digit" value="{{editForm.costMin}}" data-field="costMin" bindinput="inputEditForm" /></view>
+        <view class="edit-field"><text>最高费用</text><input type="digit" value="{{editForm.costMax}}" data-field="costMax" bindinput="inputEditForm" /></view>
+        <view class="edit-field wide"><text>调整理由</text><input value="{{editForm.reason}}" data-field="reason" bindinput="inputEditForm" placeholder="为什么加入这里" /></view>
+      </view>
+      <view class="edit-form-actions"><button bindtap="cancelEditForm">取消</button><button class="save-edit" bindtap="saveEditForm">加入草稿</button></view>
+    </view>
+
+    <view wx:if="{{editing && editOperations.length}}" class="card edit-submit-card">
+      <view><view class="edit-title">待确认编辑 {{editOperations.length}} 项</view><view class="muted">系统将重新计算时间、顺序和预算</view></view>
+      <button loading="{{editSubmitting}}" bindtap="previewEdits">查看影响摘要</button>
+    </view>
+
+    <view wx:if="{{editPreview}}" class="card edit-preview-card">
+      <view class="preview-kicker">编辑影响摘要</view>
+      <view class="preview-title">{{editPreview.summary}}</view>
+      <view wx:for="{{editPreview.changes}}" wx:key="*this" class="preview-change">✓ {{item}}</view>
+      <view class="preview-cost">费用：¥{{editPreview.costBefore[0]}}–{{editPreview.costBefore[1]}} → ¥{{editPreview.costAfter[0]}}–{{editPreview.costAfter[1]}}</view>
+      <view class="edit-form-actions"><button bindtap="closeEditPreview">继续修改</button><button class="save-edit" loading="{{editSubmitting}}" bindtap="applyEditPreview">确认应用</button></view>
+    </view>
+
+    <view wx:if="{{view === 'route'}}" class="route-panel">
       <map class="route-map" latitude="{{latitude}}" longitude="{{longitude}}" scale="12" markers="{{markers}}" polyline="{{polyline}}"></map>
       <view class="card route-list">
         <view wx:for="{{trip.days[selectedDay].nodes}}" wx:key="id" class="route-node">
@@ -43,8 +105,10 @@
       </view>
     </view>
 
-    <button class="primary-button" bindtap="openCompanion">进入在途陪伴</button>
-    <button class="secondary-button" bindtap="replan">调整行程</button>
+    <button wx:if="{{!editing && trip.state !== 'CANCELLED'}}" class="primary-button" bindtap="openCompanion">{{trip.state === 'COMPLETED' ? '查看旅程回顾' : '进入在途陪伴'}}</button>
+    <button wx:if="{{!editing && trip.state !== 'COMPLETED' && trip.state !== 'CANCELLED'}}" class="secondary-button" bindtap="replan">调整行程</button>
+    <button wx:if="{{!editing && trip.state !== 'COMPLETED' && trip.state !== 'CANCELLED'}}" class="cancel-trip-button" bindtap="cancelTrip">取消这段行程</button>
+    <view wx:if="{{!editing && trip.state === 'CANCELLED'}}" class="cancelled-note">此行程已取消，可继续查看原安排，但不能签到或调整。</view>
   </block>
 
   <view wx:else class="empty card">

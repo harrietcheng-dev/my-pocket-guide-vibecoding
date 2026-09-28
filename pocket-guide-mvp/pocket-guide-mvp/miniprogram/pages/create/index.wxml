@@ -1,20 +1,23 @@
 <view class="page">
   <view class="title">创建行程</view>
   <view class="muted subtitle">先填写关键条件，生成前还会再次确认。</view>
+  <view wx:if="{{formError}}" class="form-error">{{formError}}</view>
 
   <view class="form card">
+    <view class="form-section-title">基础信息</view>
     <view class="label">目的城市</view>
-    <input class="input" value="{{form.city}}" data-field="city" bindinput="input" />
+    <input class="input" value="{{form.city}}" data-field="city" bindinput="input" placeholder="例如北京" />
     <view class="grid">
       <view>
         <view class="label">开始日期</view>
-        <input class="input" value="{{form.startDate}}" data-field="startDate" bindinput="input" />
+        <picker mode="date" value="{{form.startDate}}" data-field="startDate" bindchange="changeDate"><view class="picker-field">{{form.startDate}}</view></picker>
       </view>
       <view>
         <view class="label">结束日期</view>
-        <input class="input" value="{{form.endDate}}" data-field="endDate" bindinput="input" />
+        <picker mode="date" value="{{form.endDate}}" data-field="endDate" bindchange="changeDate"><view class="picker-field">{{form.endDate}}</view></picker>
       </view>
     </view>
+    <view class="derived-tip">共 {{form.days}} 天，单次最多 7 天</view>
     <view class="grid">
       <view>
         <view class="label">同行人数</view>
@@ -25,7 +28,9 @@
         <input class="input" type="number" value="{{form.groupBudgetCny}}" data-field="groupBudgetCny" bindinput="input" />
       </view>
     </view>
+    <view class="derived-tip">人均参考约 ¥{{perCapitaBudget}}，不含住宿和往返大交通</view>
 
+    <view class="form-section-title divided">偏好与节奏</view>
     <view class="label">兴趣</view>
     <view>
       <view wx:for="{{interestOptions}}" wx:key="value" class="choice {{item.selected ? 'active' : ''}}" data-value="{{item.value}}" bindtap="toggleInterest">{{item.value}}</view>
@@ -36,8 +41,26 @@
       <view wx:for="{{paceOptions}}" wx:key="*this" class="choice {{form.pace === item ? 'active' : ''}}" data-value="{{item}}" bindtap="pickPace">{{item}}</view>
     </view>
 
-    <view class="label">补充要求</view>
-    <textarea class="textarea" placeholder="例如少走路、需要午休" data-field="freeText" bindinput="input" />
+    <view class="label">交通方式（可多选）</view>
+    <view><view wx:for="{{transportOptions}}" wx:key="value" class="choice {{item.selected ? 'active' : ''}}" data-value="{{item.value}}" bindtap="toggleTransport">{{item.value}}</view></view>
+
+    <view class="grid">
+      <view><view class="label">每日开始</view><picker mode="time" value="{{form.dailyStart}}" data-field="dailyStart" bindchange="changeTime"><view class="picker-field">{{form.dailyStart}}</view></picker></view>
+      <view><view class="label">每日结束</view><picker mode="time" value="{{form.dailyEnd}}" data-field="dailyEnd" bindchange="changeTime"><view class="picker-field">{{form.dailyEnd}}</view></picker></view>
+    </view>
+
+    <view class="form-section-title divided">位置与特殊需求</view>
+    <view class="label">行程起点</view>
+    <input class="input" value="{{form.startPoint}}" data-field="startPoint" bindinput="input" placeholder="酒店、车站、当前位置或具体地点" />
+    <view class="label">行程终点</view>
+    <input class="input" value="{{form.endPoint}}" data-field="endPoint" bindinput="input" placeholder="酒店、车站、当前位置或具体地点" />
+    <view class="derived-tip">当前默认使用“酒店或住宿地”，请在下一页再次确认。</view>
+
+    <view class="label">特殊需求（可多选）</view>
+    <view><view wx:for="{{physicalOptions}}" wx:key="value" class="choice {{item.selected ? 'active' : ''}}" data-value="{{item.value}}" bindtap="togglePhysical">{{item.value}}</view></view>
+
+    <view class="label">其他补充</view>
+    <textarea class="textarea" value="{{form.freeText}}" placeholder="例如想看夜景、避免太早出发" data-field="freeText" bindinput="input" />
   </view>
   <button class="primary-button" bindtap="next">查看需求摘要</button>
 </view>

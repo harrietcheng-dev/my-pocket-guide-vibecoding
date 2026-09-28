@@ -1,3 +1,5 @@
 {
-  "usingComponents": {}
+  "usingComponents": {
+    "guangdundun-avatar": "/components/guangdundun-avatar/index"
+  }
 }

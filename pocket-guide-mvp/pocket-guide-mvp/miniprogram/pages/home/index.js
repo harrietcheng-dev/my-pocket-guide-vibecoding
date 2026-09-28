@@ -10,7 +10,13 @@ Page({
     const id = wx.getStorageSync('currentTripId')
     if (!id) return this.setData({ currentTrip: null })
     api.getTrip(id)
-      .then((currentTrip) => this.setData({ currentTrip }))
+      .then((currentTrip) => {
+        if (!currentTrip || !['READY', 'ACTIVE', 'CONFIRMED'].includes(currentTrip.state)) {
+          wx.removeStorageSync('currentTripId')
+          return this.setData({ currentTrip: null })
+        }
+        this.setData({ currentTrip })
+      })
       .catch(() => {
         wx.removeStorageSync('currentTripId')
         this.setData({ currentTrip: null })
