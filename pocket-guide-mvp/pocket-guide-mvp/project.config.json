@@ -1,6 +1,7 @@
 {
   "description": "我的口袋导游 MVP",
   "miniprogramRoot": "miniprogram/",
+  "cloudfunctionRoot": "cloudfunctions/",
   "compileType": "miniprogram",
   "setting": {
     "useCompilerPlugins": false,
