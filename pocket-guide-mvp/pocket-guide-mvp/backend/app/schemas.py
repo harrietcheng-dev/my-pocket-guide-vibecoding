@@ -28,6 +28,17 @@ class ReplanRequest(BaseModel):
     message: str = Field(min_length=1, max_length=500)
 
 
+class CheckInRequest(BaseModel):
+    latitude: float | None = None
+    longitude: float | None = None
+    manual: bool = True
+
+
+class ConversationMessageRequest(BaseModel):
+    text: str = Field(min_length=1, max_length=500)
+    node_id: str | None = None
+
+
 class AnonymousSessionRequest(BaseModel):
     device_id: str | None = None
 
