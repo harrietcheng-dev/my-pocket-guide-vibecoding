@@ -103,6 +103,45 @@ module.exports = {
   generateTrip(id) {
     return this.getTrip(id)
   },
+  checkIn(id, nodeId) {
+    const trips = readTrips()
+    const trip = trips.find((item) => item.id === id)
+    if (!trip) return Promise.reject(new Error('行程不存在'))
+    let checkedNode = null
+    trip.days.forEach((day) => day.nodes.forEach((item) => {
+      if (item.id === nodeId) {
+        item.status = 'IN_PROGRESS'
+        checkedNode = item
+      } else if (item.status === 'IN_PROGRESS') item.status = 'PLANNED'
+    }))
+    trip.state = 'ACTIVE'
+    writeTrips(trips)
+    return Promise.resolve({ trip: clone(trip), node: clone(checkedNode), guide: guideFor(checkedNode ? checkedNode.name : '当前景点') })
+  },
+  getGuide(placeId, name, depth) {
+    const guide = guideFor(name || placeId)
+    if (depth === 'detail') guide.text += ' 参观时还可以留意建筑轴线、屋顶形制和空间层次。'
+    return Promise.resolve(guide)
+  },
+  getNearby(category) {
+    const samples = {
+      '美食': [['简餐与茶歇', '餐饮', 320], ['故宫角楼咖啡', '餐饮', 680]],
+      '卫生间': [['公共卫生间', '公共设施', 180], ['游客中心卫生间', '公共设施', 460]],
+      '休息': [['游客休息区', '休息点', 120], ['东华门休息点', '休息点', 520]],
+      '医院': [['北京医院', '正规医院', 2100], ['协和医院东单院区', '正规医院', 2800]],
+      '交通': [['东华门公交站', '公交站', 410], ['金鱼胡同地铁站', '地铁站', 960]]
+    }
+    return Promise.resolve({ category, items: (samples[category] || samples['休息']).map((item, index) => ({ id: `${category}-${index}`, name: item[0], type: item[1], distanceM: item[2] })) })
+  },
+  askQuestion(id, text) {
+    let reply = '这是当前景点的演示问答。接入知识服务后，我会提供带来源和查询时间的回答。'
+    let action = null
+    if (/累|少走|下雨|早点结束|不想去/.test(text)) {
+      reply = '可以。我会保留已完成和正在进行的节点，只调整后续安排，确认后才会应用。'
+      action = 'replan'
+    }
+    return Promise.resolve({ id: `message_${Date.now()}`, reply, action })
+  },
   createReplan(id, request) {
     const trip = readTrips().find((item) => item.id === id)
     if (!trip) return Promise.reject(new Error('行程不存在'))
@@ -144,5 +183,18 @@ module.exports = {
     trips[index] = restored
     writeTrips(trips)
     return Promise.resolve(clone(restored))
+  }
+}
+
+function guideFor(name) {
+  return {
+    title: `${name}短讲解`,
+    text: name === '故宫博物院'
+      ? '这里是故宫博物院，始建于明永乐年间，曾是明清两代皇宫。参观时建议先看中轴线三大殿，再按体力选择东西六宫。'
+      : `${name}是本次行程的重要一站。我会结合已审核资料介绍核心看点。`,
+    durationSec: 42,
+    sourceTitle: '团队审核文旅资料（比赛演示）',
+    fetchedAt: '2026-09-27',
+    confidence: 'PARTIAL'
   }
 }

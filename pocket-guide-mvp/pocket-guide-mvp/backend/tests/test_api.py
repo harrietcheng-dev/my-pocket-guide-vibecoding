@@ -33,6 +33,26 @@ def test_full_mvp_flow(tmp_path, monkeypatch):
         assert trip["title"] == "北京4日游"
         assert len(trip["days"]) == 4
 
+        node = trip["days"][0]["nodes"][1]
+        checked_in = client.post(
+            f"/api/v1/trips/{trip['id']}/nodes/{node['id']}/check-in",
+            json={"manual": True},
+        )
+        assert checked_in.status_code == 200
+        assert checked_in.json()["node"]["status"] == "IN_PROGRESS"
+        assert checked_in.json()["guide"]["durationSec"] >= 30
+
+        answer = client.post(
+            f"/api/v1/conversations/{trip['id']}/messages",
+            json={"text": "走累了，后面少走一点", "node_id": node["id"]},
+        )
+        assert answer.status_code == 200
+        assert answer.json()["action"] == "replan"
+
+        nearby = client.get("/api/v1/nearby", params={"category": "医院"})
+        assert nearby.status_code == 200
+        assert nearby.json()["items"][0]["type"] == "正规医院"
+
         replan = client.post(
             f"/api/v1/trips/{trip['id']}/replans",
             json={"message": "走得有点累，后面少走一点"},
