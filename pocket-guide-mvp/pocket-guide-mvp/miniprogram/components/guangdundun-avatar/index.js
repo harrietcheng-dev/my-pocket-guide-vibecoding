@@ -6,6 +6,7 @@ Component({
   properties: {
     size: { type: Number, value: 300 },
     showStatus: { type: Boolean, value: true },
+    animated: { type: Boolean, value: false },
     imageBase: { type: String, value: '' },
     ttsFunction: { type: String, value: 'guangdundun-tts' }
   },

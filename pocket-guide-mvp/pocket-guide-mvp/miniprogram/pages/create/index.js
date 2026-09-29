@@ -33,8 +33,9 @@ Page({
       freeText: ''
     }
   },
-  onLoad() {
-    const city = wx.getStorageSync('draftCity')
+  onLoad(options) {
+    let city = options && options.city ? decodeURIComponent(options.city) : ''
+    if (!city) city = wx.getStorageSync('draftCity')
     if (city) this.setData({ 'form.city': city })
   },
   input(event) {

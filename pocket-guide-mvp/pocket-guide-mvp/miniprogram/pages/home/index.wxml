@@ -1,13 +1,24 @@
-<view class="page home-page">
-  <view class="home-head">
-    <view><view class="home-eyebrow">POCKET GUIDE</view><view class="home-title">今天想去哪里？</view><view class="muted">光墩墩会把每一段旅程照顾好</view></view>
-    <view class="mini-guide"><view class="mini-guide-face">光</view><view class="online-dot"></view></view>
+<view class="page home">
+  <view class="welcome-row">
+    <view class="welcome-title">今天想去哪里？</view>
+    <view class="weather-chip">☀️ 旅途好天气</view>
   </view>
 
-  <view class="hero-panel">
-    <view><view class="hero-kicker">智能行程规划</view><view class="hero-title">从一个想法，变成可执行的旅程</view><view class="hero-copy">路线、时间、预算和在途陪伴，一次准备好。</view></view>
-    <view class="hero-actions"><button class="create-trip" bindtap="createTrip">＋ 创建新行程</button><button class="voice-plan" bindtouchstart="holdToTalk" bindtouchend="stopTalk">{{avatarState === '倾听' ? '正在倾听…' : '按住说想法'}}</button></view>
+  <view class="hero">
+    <view class="hero-glow glow-one"></view><view class="hero-glow glow-two"></view>
+    <view class="hero-copy-block">
+      <view class="hero-title">把期待装进口袋，</view>
+      <view class="hero-title hero-title-second">轻松出发</view>
+      <view class="hero-copy">告诉我目的地和偏好，为你整理路线、时间与预算。</view>
+    </view>
+    <view class="avatar-slot">
+      <guangdundun-avatar size="210" showStatus="{{false}}" animated="{{true}}" />
+    </view>
   </view>
+
+  <button class="create-button" bindtap="createTrip" hover-class="button-hover">
+    <text class="create-label">开始创建新行程</text>
+  </button>
 
   <view wx:if="{{loading}}" class="dashboard-loading"><view></view><view></view></view>
   <view wx:elif="{{loadError}}" class="dashboard-error"><text>{{loadError}}</text><text bindtap="retryLoad">重新加载</text></view>
@@ -19,10 +30,6 @@
       <view class="active-progress-meta"><text>已完成 {{activeTrip.completedCount}}/{{activeTrip.totalCount}}</text><text>{{activeTrip.dayCount}} 天行程</text></view>
       <view class="next-stop"><view class="next-stop-icon">⌖</view><view class="next-stop-main"><view>{{activeTrip.focusLabel}}</view><text>{{activeTrip.focusNode ? activeTrip.focusNode.name : '今日安排已完成'}}</text></view><view wx:if="{{activeTrip.focusNode}}" class="next-stop-time">{{activeTrip.focusNode.durationMin}} 分钟</view></view>
       <button class="continue-button" bindtap="continueActiveTrip">继续在途陪伴</button>
-    </view>
-
-    <view wx:else class="no-active-card">
-      <view class="no-active-icon">✓</view><view><view class="no-active-title">当前没有进行中的行程</view><view class="muted">从待出发行程开始，或者规划一段新旅程。</view></view>
     </view>
 
     <view class="section-head"><view><view class="section-title">待出发</view><view class="section-caption">提前查看路线和准备事项</view></view><view class="view-all" bindtap="viewAllTrips">全部行程 ›</view></view>
@@ -40,6 +47,14 @@
     <view wx:if="{{recentCompleted}}" class="recent-card" data-id="{{recentCompleted.id}}" bindtap="openTrip"><view class="recent-mark">✓</view><view class="recent-main"><view class="recent-kicker">最近完成</view><view class="recent-title">{{recentCompleted.title}}</view><view class="muted">{{recentCompleted.dateRange}}</view></view><view class="recent-arrow">›</view></view>
   </block>
 
-  <view class="section-head city-head"><view><view class="section-title">热门城市</view><view class="section-caption">快速开始一段新旅程</view></view></view>
-  <view class="city-row"><view wx:for="{{cities}}" wx:key="*this" class="city-card" data-city="{{item}}" bindtap="chooseCity"><view class="city-pin">⌖</view><view class="city-name">{{item}}</view><view class="city-action">开始规划</view></view></view>
+  <view class="section-heading">
+    <view><view class="section-title">热门目的地</view><view class="section-subtitle">灵感不够？从大家喜欢的城市开始</view></view>
+  </view>
+  <view class="city-list">
+    <view wx:for="{{cities}}" wx:key="name" class="city-card {{item.tone}}" data-city="{{item.name}}" bindtap="chooseCity" hover-class="city-card-hover">
+      <view class="city-pattern"></view><view class="city-icon">{{item.icon}}</view>
+      <view class="city-content"><view class="city-name">{{item.name}}</view><view class="city-slogan">{{item.slogan}}</view><view class="city-action">立即规划 <text>→</text></view></view>
+    </view>
+  </view>
+  <view class="home-footer">每一程，都有光墩墩陪你探索</view>
 </view>
