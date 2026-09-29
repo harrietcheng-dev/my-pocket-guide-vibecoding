@@ -1,29 +1,38 @@
 <view class="page home">
-  <view class="hero card">
-    <view class="avatar-shell">
-      <view class="avatar-face">光</view>
-      <view class="avatar-state">光墩墩 · {{avatarState}}</view>
-    </view>
-    <view class="title">你好，我是你的口袋导游</view>
-    <view class="muted hero-copy">告诉我想去哪里，我会把路线、时间和预算整理成一份可执行行程。</view>
-    <button class="primary-button" bindtouchstart="holdToTalk" bindtouchend="stopTalk">按住说话</button>
-    <button class="secondary-button" bindtap="createTrip">创建新行程</button>
+  <view class="welcome-row">
+    <view class="welcome-title">今天想去哪里？</view>
+    <view class="weather-chip">☀️ 旅途好天气</view>
   </view>
 
-  <view wx:if="{{currentTrip}}" class="current card" bindtap="continueTrip">
-    <view>
-      <view class="status">当前行程</view>
-      <view class="current-title">{{currentTrip.title}}</view>
-      <view class="muted">版本 {{currentTrip.version}} · 点击继续</view>
+  <view class="hero">
+    <view class="hero-glow glow-one"></view><view class="hero-glow glow-two"></view>
+    <view class="hero-copy-block">
+      <view class="hero-title">把期待装进口袋，</view>
+      <view class="hero-title hero-title-second">轻松出发</view>
+      <view class="hero-copy">告诉我目的地和偏好，为你整理路线、时间与预算。</view>
     </view>
+    <view class="avatar-slot">
+      <guangdundun-avatar size="210" showStatus="{{false}}" animated="{{true}}" />
+    </view>
+  </view>
+
+  <button class="create-button" bindtap="createTrip" hover-class="button-hover">
+    <text class="create-label">开始创建新行程</text>
+  </button>
+
+  <view wx:if="{{currentTrip}}" class="current card" bindtap="continueTrip">
+    <view><view class="status">当前行程</view><view class="current-title">{{currentTrip.title}}</view><view class="muted">版本 {{currentTrip.version}} · 点击继续</view></view>
     <view class="arrow">›</view>
   </view>
 
-  <view class="section-title">热门城市</view>
-  <view class="city-row">
-    <view wx:for="{{cities}}" wx:key="*this" class="city-card" data-city="{{item}}" bindtap="chooseCity">
-      <view class="city-name">{{item}}</view>
-      <view class="muted">开始规划</view>
+  <view class="section-heading">
+    <view><view class="section-title">热门目的地</view><view class="section-subtitle">灵感不够？从大家喜欢的城市开始</view></view>
+  </view>
+  <view class="city-list">
+    <view wx:for="{{cities}}" wx:key="name" class="city-card {{item.tone}}" data-city="{{item.name}}" bindtap="chooseCity" hover-class="city-card-hover">
+      <view class="city-pattern"></view><view class="city-icon">{{item.icon}}</view>
+      <view class="city-content"><view class="city-name">{{item.name}}</view><view class="city-slogan">{{item.slogan}}</view><view class="city-action">立即规划 <text>→</text></view></view>
     </view>
   </view>
+  <view class="home-footer">每一程，都有光墩墩陪你探索</view>
 </view>

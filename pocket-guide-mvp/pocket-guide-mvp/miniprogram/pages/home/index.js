@@ -3,8 +3,11 @@ const api = require('../../utils/api')
 Page({
   data: {
     currentTrip: null,
-    avatarState: '待机',
-    cities: ['北京', '西安', '杭州']
+    cities: [
+      { name: '北京', slogan: '穿越古今的京城漫游', icon: '🏯', tone: 'beijing' },
+      { name: '西安', slogan: '遇见盛唐与人间烟火', icon: '🏮', tone: 'xian' },
+      { name: '杭州', slogan: '沿着西湖慢慢生活', icon: '🌿', tone: 'hangzhou' }
+    ]
   },
   onShow() {
     const id = wx.getStorageSync('currentTripId')
@@ -23,14 +26,7 @@ Page({
     wx.switchTab({ url: '/pages/trips/index' })
   },
   chooseCity(event) {
-    wx.setStorageSync('draftCity', event.currentTarget.dataset.city)
-    this.createTrip()
-  },
-  holdToTalk() {
-    this.setData({ avatarState: '倾听' })
-    wx.showToast({ title: '语音服务将在联调阶段接入', icon: 'none' })
-  },
-  stopTalk() {
-    this.setData({ avatarState: '待机' })
+    const city = event.currentTarget.dataset.city
+    wx.navigateTo({ url: `/pages/create/index?city=${encodeURIComponent(city)}` })
   }
 })
