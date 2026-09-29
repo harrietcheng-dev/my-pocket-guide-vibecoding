@@ -1,0 +1,42 @@
+<view class="page prefs-page">
+  <view class="title">旅行偏好</view>
+  <view class="muted subtitle">用于为你生成更合适的行程</view>
+
+  <view class="card prefs-card">
+    <view class="label">兴趣偏好（可多选）</view>
+    <view><view wx:for="{{interestOptions}}" wx:key="value" class="choice {{item.selected ? 'active' : ''}}" data-field="interestOptions" data-value="{{item.value}}" bindtap="toggleMulti">{{item.value}}</view></view>
+
+    <view class="label">行程节奏</view>
+    <view><view wx:for="{{paceOptions}}" wx:key="value" class="choice {{item.selected ? 'active' : ''}}" data-field="paceOptions" data-value="{{item.value}}" bindtap="pickSingle">{{item.value}}</view></view>
+
+    <view class="label">常用交通（可多选）</view>
+    <view><view wx:for="{{transportOptions}}" wx:key="value" class="choice {{item.selected ? 'active' : ''}}" data-field="transportOptions" data-value="{{item.value}}" bindtap="toggleMulti">{{item.value}}</view></view>
+
+    <view class="label">人均预算（元）</view>
+    <input class="input" type="number" value="{{perCapitaBudget}}" bindinput="inputBudget" placeholder="例如 1500" />
+    <view class="derived-tip">用于估算整组预算，创建行程时仍可单独调整。</view>
+
+    <view class="form-section-title divided">饮食与住宿</view>
+    <view class="label">饮食禁忌（可多选）</view>
+    <view><view wx:for="{{dietOptions}}" wx:key="value" class="choice {{item.selected ? 'active' : ''}}" data-field="dietOptions" data-value="{{item.value}}" bindtap="toggleMulti">{{item.value}}</view></view>
+
+    <view class="label">住宿偏好</view>
+    <view><view wx:for="{{lodgingOptions}}" wx:key="value" class="choice {{item.selected ? 'active' : ''}}" data-field="lodgingOptions" data-value="{{item.value}}" bindtap="pickSingle">{{item.value}}</view></view>
+
+    <view class="form-section-title divided">特殊需求与无障碍</view>
+    <view class="label">无障碍需求（可多选）</view>
+    <view><view wx:for="{{accessibilityOptions}}" wx:key="value" class="choice {{item.selected ? 'active' : ''}}" data-field="accessibilityOptions" data-value="{{item.value}}" bindtap="toggleMulti">{{item.value}}</view></view>
+
+    <view class="label">医疗与体力需求（可多选）</view>
+    <view><view wx:for="{{healthOptions}}" wx:key="value" class="choice {{item.selected ? 'active' : ''}}" data-field="healthOptions" data-value="{{item.value}}" bindtap="toggleMulti">{{item.value}}</view></view>
+
+    <view class="label">同行儿童或老人（可多选）</view>
+    <view><view wx:for="{{companionOptions}}" wx:key="value" class="choice {{item.selected ? 'active' : ''}}" data-field="companionOptions" data-value="{{item.value}}" bindtap="toggleMulti">{{item.value}}</view></view>
+
+    <view class="reset-link" bindtap="reset">恢复默认偏好</view>
+  </view>
+
+  <view class="save-bar">
+    <button class="primary-button save-button" loading="{{saving}}" bindtap="save">保存偏好</button>
+  </view>
+</view>

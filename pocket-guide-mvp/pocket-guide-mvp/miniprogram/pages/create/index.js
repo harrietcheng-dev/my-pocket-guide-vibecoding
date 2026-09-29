@@ -1,42 +1,86 @@
+const { calculateTripDays, validateTripForm } = require('../../utils/trip-form')
+const store = require('../../utils/profile-store')
+
 const interestOptions = ['历史文化', '美食', '自然', '拍照', '城市漫步', '休闲']
 const transportOptions = ['公交', '地铁', '步行', '打车']
-const physicalOptions = ['少走路', '需要午休', '无障碍', '关注医院药店']
-const { calculateTripDays, validateTripForm } = require('../../utils/trip-form')
+const physicalOptions = ['少走路', '需要午休', '无障碍', '关注医院药店', '轮椅出行', '慢性病需注意']
+
+function withSelection(options, selected) {
+  return options.map((value) => ({ value, selected: selected.indexOf(value) >= 0 }))
+}
+
+function buildInitialForm() {
+  return {
+    city: '北京',
+    startDate: '2026-10-01',
+    endDate: '2026-10-04',
+    days: 4,
+    partySize: 2,
+    groupBudgetCny: 3000,
+    interests: ['历史文化', '美食'],
+    pace: '适中',
+    transportModes: ['公交', '地铁', '步行'],
+    dailyStart: '09:00',
+    dailyEnd: '21:00',
+    dailyWindow: '09:00–21:00',
+    startPoint: '酒店或住宿地',
+    endPoint: '酒店或住宿地',
+    physicalConstraints: [],
+    freeText: ''
+  }
+}
 
 Page({
   data: {
-    interestOptions: interestOptions.map((value) => ({
-      value,
-      selected: value === '历史文化' || value === '美食'
-    })),
+    interestOptions: withSelection(interestOptions, ['历史文化', '美食']),
     paceOptions: ['轻松', '适中', '紧凑'],
-    transportOptions: transportOptions.map((value) => ({ value, selected: value !== '打车' })),
-    physicalOptions: physicalOptions.map((value) => ({ value, selected: false })),
+    transportOptions: withSelection(transportOptions, ['公交', '地铁', '步行']),
+    physicalOptions: withSelection(physicalOptions, []),
     perCapitaBudget: 1500,
     formError: '',
-    form: {
-      city: '北京',
-      startDate: '2026-10-01',
-      endDate: '2026-10-04',
-      days: 4,
-      partySize: 2,
-      groupBudgetCny: 3000,
-      interests: ['历史文化', '美食'],
-      pace: '适中',
-      transportModes: ['公交', '地铁', '步行'],
-      dailyStart: '09:00',
-      dailyEnd: '21:00',
-      dailyWindow: '09:00–21:00',
-      startPoint: '酒店或住宿地',
-      endPoint: '酒店或住宿地',
-      physicalConstraints: [],
-      freeText: ''
-    }
+    form: buildInitialForm()
   },
   onLoad(options) {
-    let city = options && options.city ? decodeURIComponent(options.city) : ''
-    if (!city) city = wx.getStorageSync('draftCity')
-    if (city) this.setData({ 'form.city': city })
+    this.applyPreferences(options)
+  },
+  // 默认值 ← 旅行偏好 ← 入口带来的城市（URL 参数优先，其次 draftCity、常住城市）。
+  // 偏好只作为初始值，用户仍可单独调整
+  applyPreferences(options = {}) {
+    const form = buildInitialForm()
+    const prefs = store.getPreferences()
+    const profile = store.getProfile()
+
+    if (prefs.interests.length) form.interests = prefs.interests.slice()
+    if (prefs.pace) form.pace = prefs.pace
+    if (prefs.transportModes.length) form.transportModes = prefs.transportModes.slice()
+    form.physicalConstraints = store.physicalConstraints()
+    form.groupBudgetCny = prefs.perCapitaBudget * Number(form.partySize)
+
+    // 后端暂无饮食 / 住宿 / 同行人员字段，先作为补充说明带入
+    const notes = store.preferenceNotes()
+    if (notes) form.freeText = notes
+
+    const paramCity = options && options.city ? decodeURIComponent(options.city) : ''
+    const draftCity = wx.getStorageSync('draftCity')
+    if (paramCity) {
+      form.city = paramCity
+    } else if (draftCity) {
+      form.city = draftCity
+      // draftCity 是一次性入口参数，用完即清，避免一直覆盖用户填写的城市
+      wx.removeStorageSync('draftCity')
+    } else if (profile.city) {
+      form.city = profile.city
+    }
+
+    this.setData(
+      {
+        form,
+        interestOptions: withSelection(interestOptions, form.interests),
+        transportOptions: withSelection(transportOptions, form.transportModes),
+        physicalOptions: withSelection(physicalOptions, form.physicalConstraints)
+      },
+      () => this.refreshDerived()
+    )
   },
   input(event) {
     this.setData({ [`form.${event.currentTarget.dataset.field}`]: event.detail.value, formError: '' }, () => this.refreshDerived())
@@ -56,11 +100,10 @@ Page({
     const index = interests.indexOf(value)
     if (index >= 0) interests.splice(index, 1)
     else interests.push(value)
-    const interestOptions = this.data.interestOptions.map((item) => ({
-      ...item,
-      selected: interests.indexOf(item.value) >= 0
-    }))
-    this.setData({ 'form.interests': interests, interestOptions })
+    this.setData({
+      'form.interests': interests,
+      interestOptions: this.data.interestOptions.map((item) => ({ ...item, selected: interests.indexOf(item.value) >= 0 }))
+    })
   },
   toggleTransport(event) {
     this.toggleMultiOption('transportModes', 'transportOptions', event.currentTarget.dataset.value)

@@ -64,8 +64,9 @@ Page({
     wx.switchTab({ url: '/pages/trips/index' })
   },
   openLibrary(event) {
-    wx.setStorageSync('profileInitialTab', event.currentTarget.dataset.tab || 'favorites')
-    wx.switchTab({ url: '/pages/profile/index' })
+    // 收藏已从「我的」拆成独立子页，这里直接跳子页并带上要看的分类
+    const tab = event.currentTarget.dataset.tab === 'notes' ? 'notes' : 'favorites'
+    wx.navigateTo({ url: `/pages/library/index?tab=${tab}` })
   },
   retryLoad() {
     this.loadDashboard()
