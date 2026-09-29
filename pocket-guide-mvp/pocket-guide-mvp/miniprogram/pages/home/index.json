@@ -1,5 +1,8 @@
 {
-  "navigationBarTitleText": "我的口袋导游",
+  "navigationBarTitleText": "首页",
   "enablePullDownRefresh": true,
-  "backgroundTextStyle": "dark"
+  "backgroundTextStyle": "dark",
+  "usingComponents": {
+    "guangdundun-avatar": "/components/guangdundun-avatar/index"
+  }
 }

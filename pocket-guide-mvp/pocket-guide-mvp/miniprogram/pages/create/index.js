@@ -40,11 +40,12 @@ Page({
     formError: '',
     form: buildInitialForm()
   },
-  onLoad() {
-    this.applyPreferences()
+  onLoad(options) {
+    this.applyPreferences(options)
   },
-  // 默认值 ← 旅行偏好 ← 本次入口带来的城市。偏好只作为初始值，用户仍可单独调整
-  applyPreferences() {
+  // 默认值 ← 旅行偏好 ← 入口带来的城市（URL 参数优先，其次 draftCity、常住城市）。
+  // 偏好只作为初始值，用户仍可单独调整
+  applyPreferences(options = {}) {
     const form = buildInitialForm()
     const prefs = store.getPreferences()
     const profile = store.getProfile()
@@ -59,8 +60,11 @@ Page({
     const notes = store.preferenceNotes()
     if (notes) form.freeText = notes
 
+    const paramCity = options && options.city ? decodeURIComponent(options.city) : ''
     const draftCity = wx.getStorageSync('draftCity')
-    if (draftCity) {
+    if (paramCity) {
+      form.city = paramCity
+    } else if (draftCity) {
       form.city = draftCity
       // draftCity 是一次性入口参数，用完即清，避免一直覆盖用户填写的城市
       wx.removeStorageSync('draftCity')
