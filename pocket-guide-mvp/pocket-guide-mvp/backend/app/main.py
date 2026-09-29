@@ -9,11 +9,19 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from . import db
-from .planner import apply_replan, build_replan, build_trip
-from .schemas import AnonymousSessionRequest, CreateTripRequest, ReplanRequest
+from .planner import apply_replan, build_replan, build_trip, cancel_trip, check_in_trip, complete_trip_node, preview_trip_edits
+from .schemas import (
+    AnonymousSessionRequest,
+    CheckInRequest,
+    ConversationMessageRequest,
+    CreateTripRequest,
+    ReplanRequest,
+    TripEditRequest,
+)
 
 
 REPLANS: dict[str, dict] = {}
+EDITS: dict[str, dict] = {}
 
 
 @asynccontextmanager
@@ -85,16 +93,95 @@ def generate_trip(trip_id: str) -> dict:
 @app.post("/api/v1/trips/{trip_id}/start")
 def start_trip(trip_id: str) -> dict:
     trip = require_trip(trip_id)
+    if trip.get("state") in {"COMPLETED", "CANCELLED"}:
+        raise HTTPException(status_code=409, detail="已结束或取消的行程不能重新开始")
+    require_no_other_active_trip(trip_id)
     trip["state"] = "ACTIVE"
     return db.save_trip(trip)
+
+
+@app.post("/api/v1/trips/{trip_id}/cancel")
+def cancel_existing_trip(trip_id: str) -> dict:
+    trip = require_trip(trip_id)
+    try:
+        return db.save_trip(cancel_trip(trip))
+    except ValueError as error:
+        raise HTTPException(status_code=409, detail=str(error)) from error
+
+
+@app.post("/api/v1/trips/{trip_id}/nodes/{node_id}/check-in")
+def check_in_node(trip_id: str, node_id: str, payload: CheckInRequest) -> dict:
+    trip = require_trip(trip_id)
+    try:
+        require_no_other_active_trip(trip_id)
+        trip, checked_node = check_in_trip(trip, node_id, payload.manual)
+    except LookupError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+    except ValueError as error:
+        raise HTTPException(status_code=409, detail=str(error)) from error
+    db.save_trip(trip)
+    return {
+        "trip": trip,
+        "node": checked_node,
+        "guide": guide_for_place(checked_node.get("name", "当前景点")),
+    }
+
+
+@app.post("/api/v1/trips/{trip_id}/nodes/{node_id}/complete")
+def complete_node(trip_id: str, node_id: str) -> dict:
+    trip = require_trip(trip_id)
+    try:
+        trip, completed_node = complete_trip_node(trip, node_id)
+    except LookupError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+    except ValueError as error:
+        raise HTTPException(status_code=409, detail=str(error)) from error
+    db.save_trip(trip)
+    return {"trip": trip, "node": completed_node}
 
 
 @app.post("/api/v1/trips/{trip_id}/replans", status_code=201)
 def create_replan(trip_id: str, payload: ReplanRequest) -> dict:
     trip = require_trip(trip_id)
+    if trip.get("state") in {"COMPLETED", "CANCELLED"}:
+        raise HTTPException(status_code=409, detail="已结束或取消的行程不能调整")
     replan = build_replan(trip, payload.message)
     REPLANS[replan["id"]] = replan
     return replan
+
+
+@app.post("/api/v1/trips/{trip_id}/edits", status_code=201)
+def preview_edits(trip_id: str, payload: TripEditRequest) -> dict:
+    trip = require_trip(trip_id)
+    try:
+        candidate, changes = preview_trip_edits(trip, [operation.model_dump() for operation in payload.operations])
+    except LookupError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+    except ValueError as error:
+        raise HTTPException(status_code=409, detail=str(error)) from error
+    edit_id = str(uuid4())
+    EDITS[edit_id] = {"tripId": trip_id, "baseVersion": trip.get("version"), "candidate": candidate}
+    return {
+        "id": edit_id,
+        "tripId": trip_id,
+        "summary": candidate["lastAdjustment"],
+        "changes": changes,
+        "affectedDays": sorted({operation.dayIndex for operation in payload.operations}),
+        "costBefore": trip.get("costSummary", {}).get("total", [0, 0]),
+        "costAfter": candidate.get("costSummary", {}).get("total", [0, 0]),
+    }
+
+
+@app.post("/api/v1/trips/{trip_id}/edits/{edit_id}/confirm")
+def confirm_edits(trip_id: str, edit_id: str) -> dict:
+    edit = EDITS.get(edit_id)
+    if not edit or edit["tripId"] != trip_id:
+        raise HTTPException(status_code=404, detail="编辑方案不存在")
+    current = require_trip(trip_id)
+    if current.get("version") != edit["baseVersion"]:
+        raise HTTPException(status_code=409, detail="行程已发生变化，请重新编辑")
+    EDITS.pop(edit_id, None)
+    return db.save_trip(edit["candidate"])
 
 
 @app.post("/api/v1/trips/{trip_id}/replans/{replan_id}/apply")
@@ -127,8 +214,85 @@ def search_cities(q: str = "") -> list[dict]:
     return [city for city in cities if q.lower() in city["name"].lower()]
 
 
+@app.get("/api/v1/places/{place_id}/guide")
+def get_place_guide(place_id: str, name: str | None = None, depth: str = "short") -> dict:
+    guide = guide_for_place(name or place_id)
+    if depth == "detail":
+        guide["text"] += " 参观时可以留意建筑轴线、屋顶形制和空间层次，它们共同体现了中国古代宫殿建筑对秩序与礼制的表达。"
+        guide["durationSec"] = 58
+    return guide
+
+
+@app.get("/api/v1/nearby")
+def nearby(category: str = "休息", latitude: float | None = None, longitude: float | None = None) -> dict:
+    samples = {
+        "美食": [("简餐与茶歇", "餐饮", 320), ("故宫角楼咖啡", "餐饮", 680)],
+        "卫生间": [("公共卫生间", "公共设施", 180), ("游客中心卫生间", "公共设施", 460)],
+        "休息": [("游客休息区", "休息点", 120), ("东华门休息点", "休息点", 520)],
+        "医院": [("北京医院", "正规医院", 2100), ("协和医院东单院区", "正规医院", 2800)],
+        "交通": [("东华门公交站", "公交站", 410), ("金鱼胡同地铁站", "地铁站", 960)],
+    }
+    base_latitude = latitude if latitude is not None else 39.9180
+    base_longitude = longitude if longitude is not None else 116.3970
+    items = [
+        {
+            "id": f"{category}-{index}",
+            "name": item[0],
+            "type": item[1],
+            "distanceM": item[2],
+            "latitude": round(base_latitude + index * 0.0012, 6),
+            "longitude": round(base_longitude + index * 0.0015, 6),
+        }
+        for index, item in enumerate(samples.get(category, samples["休息"]), start=1)
+    ]
+    return {"category": category, "items": items, "locationUsed": latitude is not None and longitude is not None}
+
+
+@app.post("/api/v1/conversations/{trip_id}/messages")
+def send_conversation_message(trip_id: str, payload: ConversationMessageRequest) -> dict:
+    trip = require_trip(trip_id)
+    text = payload.text.strip()
+    if any(keyword in text for keyword in ("不舒服", "胸痛", "受伤", "危险", "报警")):
+        reply = "如果你或同行者身体不适或遇到危险，请尽快联系 120、110 或附近正规机构。我可以帮你查看附近医院，但不能代替专业诊断或安全判断。"
+        action = "nearby_hospital"
+    elif any(keyword in text for keyword in ("累", "少走", "下雨", "早点结束", "不想去")):
+        reply = "可以。我会保留已经完成和正在进行的节点，只调整后续安排。先为你生成变化摘要，确认后才会应用。"
+        action = "replan"
+    elif "卫生间" in text:
+        reply = "可以，已为你准备附近卫生间列表。距离为演示数据，正式接入地图后会按当前位置刷新。"
+        action = "nearby_toilet"
+    else:
+        node_name = next((node.get("name") for day in trip.get("days", []) for node in day.get("nodes", []) if node.get("id") == payload.node_id), "当前景点")
+        reply = f"关于{node_name}：{guide_for_place(node_name)['text']} 你也可以问开放时间、参观重点或接下来怎么走。"
+        action = None
+    return {"id": str(uuid4()), "reply": reply, "action": action, "createdAt": datetime.now(UTC).isoformat()}
+
+
+def guide_for_place(name: str) -> dict:
+    guides = {
+        "故宫博物院": "这里是故宫博物院，始建于明永乐年间，曾是明清两代皇宫。参观时建议先看中轴线三大殿，再按体力选择东西六宫。",
+        "天安门广场": "天安门广场位于北京中轴线核心位置。清晨到达视野更开阔，也便于衔接故宫参观。",
+        "天坛公园": "天坛是明清两代皇帝祭天祈谷的场所，祈年殿与回音壁是最具代表性的参观点。",
+        "颐和园": "颐和园以昆明湖和万寿山为主体，是保存较完整的皇家园林。路线较长，建议量力安排步行。",
+    }
+    return {
+        "title": f"{name}短讲解",
+        "text": guides.get(name, f"{name}是本次行程的重要一站。我会结合已审核资料介绍核心看点，并把开放信息标记为待复核。"),
+        "durationSec": 42,
+        "sourceTitle": "团队审核文旅资料（比赛演示）",
+        "fetchedAt": "2026-09-27",
+        "confidence": "PARTIAL",
+    }
+
+
 def require_trip(trip_id: str) -> dict:
     trip = db.get_trip(trip_id)
     if not trip:
         raise HTTPException(status_code=404, detail="行程不存在")
     return trip
+
+
+def require_no_other_active_trip(trip_id: str) -> None:
+    active = next((item for item in db.list_trips() if item.get("state") == "ACTIVE" and item.get("id") != trip_id), None)
+    if active:
+        raise HTTPException(status_code=409, detail=f"“{active.get('title', '另一行程')}”正在进行，请先完成或取消它")

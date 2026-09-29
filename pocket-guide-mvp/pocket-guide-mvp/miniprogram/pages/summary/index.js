@@ -1,13 +1,16 @@
 const api = require('../../utils/api')
 
 Page({
-  data: { draft: null, interestText: '', transportText: '', creating: false },
+  data: { draft: null, interestText: '', transportText: '', physicalText: '', perCapitaBudget: 0, creating: false },
   onLoad() {
     const draft = wx.getStorageSync('tripDraft')
+    if (!draft) return
     this.setData({
       draft,
       interestText: (draft.interests || []).join('、'),
-      transportText: (draft.transportModes || []).join('、')
+      transportText: (draft.transportModes || []).join('、'),
+      physicalText: (draft.physicalConstraints || []).join('、') || '无',
+      perCapitaBudget: Math.round(Number(draft.groupBudgetCny) / Number(draft.partySize))
     })
   },
   edit() {

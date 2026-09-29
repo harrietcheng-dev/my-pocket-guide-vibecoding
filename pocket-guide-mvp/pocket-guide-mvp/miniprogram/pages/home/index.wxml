@@ -20,10 +20,32 @@
     <text class="create-label">开始创建新行程</text>
   </button>
 
-  <view wx:if="{{currentTrip}}" class="current card" bindtap="continueTrip">
-    <view><view class="status">当前行程</view><view class="current-title">{{currentTrip.title}}</view><view class="muted">版本 {{currentTrip.version}} · 点击继续</view></view>
-    <view class="arrow">›</view>
-  </view>
+  <view wx:if="{{loading}}" class="dashboard-loading"><view></view><view></view></view>
+  <view wx:elif="{{loadError}}" class="dashboard-error"><text>{{loadError}}</text><text bindtap="retryLoad">重新加载</text></view>
+
+  <block wx:else>
+    <view wx:if="{{activeTrip}}" class="active-trip-card">
+      <view class="active-card-head"><view><view class="active-kicker"><text></text> 行程进行中</view><view class="active-title">{{activeTrip.title}}</view><view class="active-date">{{activeTrip.dateRange}}</view></view><view class="progress-number">{{activeTrip.progressPercent}}%</view></view>
+      <view class="active-progress"><view style="width: {{activeTrip.progressPercent}}%"></view></view>
+      <view class="active-progress-meta"><text>已完成 {{activeTrip.completedCount}}/{{activeTrip.totalCount}}</text><text>{{activeTrip.dayCount}} 天行程</text></view>
+      <view class="next-stop"><view class="next-stop-icon">⌖</view><view class="next-stop-main"><view>{{activeTrip.focusLabel}}</view><text>{{activeTrip.focusNode ? activeTrip.focusNode.name : '今日安排已完成'}}</text></view><view wx:if="{{activeTrip.focusNode}}" class="next-stop-time">{{activeTrip.focusNode.durationMin}} 分钟</view></view>
+      <button class="continue-button" bindtap="continueActiveTrip">继续在途陪伴</button>
+    </view>
+
+    <view class="section-head"><view><view class="section-title">待出发</view><view class="section-caption">提前查看路线和准备事项</view></view><view class="view-all" bindtap="viewAllTrips">全部行程 ›</view></view>
+    <scroll-view wx:if="{{upcomingTrips.length}}" scroll-x class="upcoming-scroll">
+      <view wx:for="{{upcomingTrips}}" wx:key="id" class="upcoming-card" data-id="{{item.id}}" bindtap="openTrip"><view class="upcoming-top"><text>待出发</text><text>{{item.dayCount}} 天</text></view><view class="upcoming-title">{{item.title}}</view><view class="upcoming-date">{{item.dateRange}}</view><view class="upcoming-arrow">查看行程 →</view></view>
+    </scroll-view>
+    <view wx:else class="section-empty" bindtap="createTrip">还没有待出发行程，点击创建 ›</view>
+
+    <view class="quick-grid">
+      <view class="quick-card" bindtap="viewAllTrips"><view class="quick-icon blue">程</view><view><view class="quick-value">{{totalTrips}}</view><view class="quick-label">全部行程</view></view></view>
+      <view class="quick-card" data-tab="favorites" bindtap="openLibrary"><view class="quick-icon orange">★</view><view><view class="quick-value">{{favoritesCount}}</view><view class="quick-label">收藏地点</view></view></view>
+      <view class="quick-card" data-tab="notes" bindtap="openLibrary"><view class="quick-icon green">记</view><view><view class="quick-value">{{notesCount}}</view><view class="quick-label">旅行笔记</view></view></view>
+    </view>
+
+    <view wx:if="{{recentCompleted}}" class="recent-card" data-id="{{recentCompleted.id}}" bindtap="openTrip"><view class="recent-mark">✓</view><view class="recent-main"><view class="recent-kicker">最近完成</view><view class="recent-title">{{recentCompleted.title}}</view><view class="muted">{{recentCompleted.dateRange}}</view></view><view class="recent-arrow">›</view></view>
+  </block>
 
   <view class="section-heading">
     <view><view class="section-title">热门目的地</view><view class="section-subtitle">灵感不够？从大家喜欢的城市开始</view></view>

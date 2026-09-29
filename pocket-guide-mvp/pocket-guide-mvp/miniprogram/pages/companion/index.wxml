@@ -1,48 +1,187 @@
-<view class="page companion-page">
-  <view class="title">在途陪伴</view>
-  <view class="muted subtitle">像导游一样，在旅途中随时陪着你</view>
+<view class="companion-page">
+  <view class="sky-glow sky-glow-one"></view>
+  <view class="sky-glow sky-glow-two"></view>
 
-  <block wx:if="{{trip}}">
-    <view class="current-place card">
-      <view class="status">当前行程</view>
-      <view class="place-title">{{currentNode ? currentNode.name : trip.title}}</view>
-      <view class="muted">{{currentNode ? currentNode.reason : '准备开始今天的旅程'}}</view>
+  <view class="page-head">
+    <view>
+      <view class="eyebrow">POCKET GUIDE · ON TRIP</view>
+      <view class="page-title">在途陪伴</view>
+      <view class="page-subtitle">像导游一样，随时在你身边</view>
+    </view>
+    <view class="head-status"><view class="status-dot"></view>{{speechState}}</view>
+  </view>
+
+  <view wx:if="{{loading}}" class="loading-shell">
+    <view class="skeleton skeleton-hero"></view>
+    <view class="skeleton skeleton-card"></view>
+  </view>
+
+  <view wx:elif="{{loadError}}" class="empty-state error-state">
+    <view class="error-mark">!</view>
+    <view class="empty-title">行程暂时加载失败</view>
+    <view class="empty-copy">{{loadError}}</view>
+    <button class="create-button" bindtap="retryLoad">重新加载</button>
+  </view>
+
+  <block wx:elif="{{trip}}">
+    <view wx:if="{{tripCompleted}}" class="completion-card">
+      <view class="completion-mark">✓</view>
+      <view class="completion-kicker">JOURNEY COMPLETED</view>
+      <view class="completion-title">本次行程已完成</view>
+      <view class="completion-copy">一路辛苦啦，光墩墩已经为你保存了这段旅程。</view>
+      <view class="completion-stats">
+        <view class="completion-stat"><text>{{completionSummary.dayCount}}</text><text>行程天数</text></view>
+        <view class="completion-stat"><text>{{completionSummary.completedCount}}</text><text>完成节点</text></view>
+        <view class="completion-stat"><text>{{completionSummary.nodeCount}}</text><text>全部节点</text></view>
+      </view>
+      <button class="completion-primary" bindtap="viewTrip">查看完整行程</button>
+      <button class="completion-secondary" bindtap="goHome">返回首页</button>
     </view>
 
-    <view class="feature card">
-      <view class="feature-icon orange">讲</view>
-      <view class="feature-main">
-        <view class="feature-title">到达景点自动讲解</view>
-        <view class="muted">到达行程景点后，主动介绍历史和故事</view>
+    <block wx:else>
+    <view class="hero-card">
+      <view class="hero-topline">
+        <view class="location-pill">⌖ {{currentNode ? currentNode.name : trip.title}}</view>
+        <view class="trip-pill">{{trip.state === 'ACTIVE' ? '行程中' : '待出发'}}</view>
       </view>
-      <button size="mini" class="feature-button" bindtap="toggleExplain">{{explaining ? '暂停' : '试听'}}</button>
+
+      <view class="scene">
+        <view class="sun"></view>
+        <view class="mountain mountain-back"></view>
+        <view class="mountain mountain-front"></view>
+        <view class="palace"><view class="palace-roof"></view><view class="palace-body"></view></view>
+        <view class="guide-avatar">
+          <view class="avatar-halo"></view>
+          <view class="avatar-component">
+            <guangdundun-avatar
+              id="guideAvatar"
+              size="230"
+              show-status="{{false}}"
+              bind:statechange="onAvatarStateChange"
+              bind:speechstart="onSpeechStart"
+              bind:speechend="onSpeechEnd"
+              bind:speechstop="onSpeechStop"
+              bind:speecherror="onSpeechError"
+            />
+          </view>
+          <view class="avatar-tag">光墩墩 · {{speechState}}</view>
+        </view>
+      </view>
+
+      <view class="guide-bubble">
+        <view class="bubble-kicker">到达景点 · 自动讲解</view>
+        <view class="guide-text">{{guide ? guide.text : (currentNode ? '到达并签到后，我会用 30–60 秒介绍这里最值得看的背景、亮点和参观提醒。' : '准备开始今天的旅程。')}}</view>
+        <view wx:if="{{guide}}" class="guide-meta" bindtap="toggleSource">
+          <text>{{guide.confidence === 'PARTIAL' ? '部分校验' : '已校验'}} · {{guide.durationSec}} 秒</text>
+          <text>{{showSource ? '收起来源' : '查看来源'}} ›</text>
+        </view>
+        <block wx:if="{{guide}}"><view wx:if="{{showSource}}" class="source-row">{{guide.sourceTitle}} · 更新于 {{guide.fetchedAt}}</view></block>
+      </view>
+
+      <view class="audio-bar">
+        <view class="audio-play" bindtap="toggleExplain">{{explaining ? 'Ⅱ' : '▶'}}</view>
+        <view class="wave-track"><view class="wave-progress" style="width: {{audioProgress}}%"></view></view>
+        <view class="audio-time">{{guide ? guide.durationSec : 42}}s</view>
+      </view>
+
+      <view class="hero-actions">
+        <button class="hero-action primary" loading="{{checkingIn || completing}}" bindtap="primaryNodeAction">{{nodeActionLabel}}</button>
+        <button class="hero-action" bindtap="detailedGuide">详细讲讲</button>
+        <button class="hero-action icon-action" bindtap="toggleSource">ⓘ</button>
+      </view>
     </view>
 
-    <view class="feature card question-card">
-      <view class="feature-head">
-        <view class="feature-icon blue">问</view>
-        <view><view class="feature-title">随时提问</view><view class="muted">关于景点、路线和周边服务都可以问</view></view>
+    <view class="route-card">
+      <view class="route-map">
+        <view class="route-line"></view>
+        <view class="map-road road-one"></view>
+        <view class="map-road road-two"></view>
+        <view class="map-pin current-pin">我</view>
+        <view class="map-pin target-pin">终</view>
       </view>
-      <view class="question-row">
-        <input class="question-input" value="{{question}}" bindinput="inputQuestion" placeholder="输入你的问题" />
-        <button class="ask-button" bindtap="ask">发送</button>
+      <view class="route-info">
+        <view class="route-label">{{routeLabel}}</view>
+        <view class="route-title">{{routeTarget ? routeTarget.name : '今日行程已接近完成'}}</view>
+        <view class="route-meta">{{routeTarget ? ('计划停留 ' + routeTarget.durationMin + ' 分钟') : '可以继续提问或结束行程'}}</view>
+        <view class="route-progress-row"><text>{{progressText}}</text><text>{{progressPercent}}%</text></view>
+        <view class="route-progress"><view class="route-progress-fill" style="width: {{progressPercent}}%"></view></view>
+        <view class="route-buttons">
+          <button class="map-button" bindtap="openMap">查看地图</button>
+          <button class="nav-button" bindtap="startNavigation">开始导航</button>
+        </view>
       </view>
-      <view wx:if="{{answer}}" class="answer">{{answer}}</view>
     </view>
 
-    <view class="feature card" bindtap="replan">
-      <view class="feature-icon green">调</view>
-      <view class="feature-main">
-        <view class="feature-title">灵活调整</view>
-        <view class="muted">累了、下雨或临时有变化，随时调整后续行程</view>
+    <view class="section-block">
+      <view class="section-head"><view><view class="section-title">周边服务</view><view class="section-subtitle">主动获取位置时才会刷新距离</view></view></view>
+      <scroll-view class="service-scroll" scroll-x="true" enhanced="true" show-scrollbar="false">
+        <view class="service-row">
+          <view wx:for="{{serviceItems}}" wx:key="key" class="service-item" data-category="{{item.key}}" bindtap="chooseService" aria-role="button" aria-label="查看{{item.label}}">
+            <view class="service-icon {{item.tone}}">{{item.icon}}</view>
+            <view class="service-label">{{item.label}}</view>
+          </view>
+        </view>
+      </scroll-view>
+
+      <view wx:if="{{nearbyTitle}}" class="nearby-panel">
+        <view class="nearby-title">{{nearbyTitle}} <text>演示距离</text></view>
+        <view wx:if="{{nearbyLoading}}" class="nearby-loading">正在查找附近地点…</view>
+        <view wx:elif="{{nearbyError}}" class="nearby-error">
+          <text>{{nearbyError}}</text>
+          <text class="nearby-retry" bindtap="retryNearby" aria-role="button">重新加载</text>
+        </view>
+        <view wx:elif="{{!nearbyItems.length}}" class="nearby-loading">附近暂时没有匹配地点</view>
+        <view wx:for="{{nearbyItems}}" wx:key="id" class="nearby-item" data-item="{{item}}" bindtap="openNearby">
+          <view class="nearby-main"><view class="nearby-name">{{item.name}}</view><view class="nearby-type">{{item.type}}</view></view>
+          <view class="nearby-distance">{{item.distanceM >= 1000 ? (item.distanceM / 1000 + ' km') : (item.distanceM + ' m')}} ›</view>
+        </view>
       </view>
-      <view class="arrow">›</view>
     </view>
+
+    <view class="section-block conversation-block">
+      <view class="section-head conversation-head">
+        <view><view class="section-title">随时提问</view><view class="section-subtitle">景点、路线、周边和调整都可以问</view></view>
+        <view class="replan-link" bindtap="replan" aria-role="button" aria-label="打开完整动态调整页面">调整行程 ›</view>
+      </view>
+
+      <view class="message-list">
+        <view wx:for="{{messages}}" wx:key="id" class="message-row {{item.role}}">
+          <view wx:if="{{item.role === 'assistant'}}" class="mini-avatar">光</view>
+          <view class="message-bubble">{{item.text}}</view>
+        </view>
+        <view wx:if="{{asking}}" class="message-row assistant"><view class="mini-avatar">光</view><view class="message-bubble typing">正在整理回答 <text>•••</text></view></view>
+      </view>
+
+      <view wx:if="{{replanLoading}}" class="replan-card loading-replan">正在计算对后续路线的影响…</view>
+      <view wx:if="{{pendingReplan}}" class="replan-card">
+        <view class="replan-kicker">调整方案 · 确认后才会应用</view>
+        <view class="replan-summary">{{pendingReplan.summary}}</view>
+        <view wx:for="{{pendingReplan.changes}}" wx:key="*this" class="replan-change"><text>✓</text><text>{{item}}</text></view>
+        <view class="replan-actions">
+          <button class="cancel-replan" bindtap="cancelInlineReplan">保留原行程</button>
+          <button class="apply-replan" loading="{{applyingReplan}}" bindtap="applyInlineReplan">确认应用</button>
+        </view>
+      </view>
+      <view wx:if="{{canUndo}}" class="undo-strip"><text>已应用最新调整</text><text class="undo-link" bindtap="undoInlineReplan" aria-role="button">撤销这一次</text></view>
+
+      <scroll-view class="quick-scroll" scroll-x="true" show-scrollbar="false">
+        <view class="quick-row"><view wx:for="{{quickQuestions}}" wx:key="*this" class="quick-chip" data-question="{{item}}" bindtap="quickAsk">{{item}}</view></view>
+      </scroll-view>
+
+      <view class="input-dock">
+        <view class="voice-button {{recording ? 'recording' : ''}}" bindtouchstart="startVoice" bindtouchend="endVoice" bindtouchcancel="cancelVoice" aria-role="button" aria-label="按住说话">{{recording ? '◼' : '●'}}</view>
+        <input class="question-input" value="{{question}}" bindinput="inputQuestion" confirm-type="send" bindconfirm="ask" placeholder="有什么问题尽管问我…" />
+        <view class="send-button {{question ? 'active' : ''}}" bindtap="ask" aria-role="button" aria-label="发送问题">发送</view>
+      </view>
+      <view class="voice-tip">按住圆点说话；当前为语音转文字演示模式</view>
+    </view>
+    </block>
   </block>
 
-  <view wx:else class="empty card">
+  <view wx:else class="empty-state">
+    <view class="empty-illustration"><view class="empty-pocket">光</view></view>
     <view class="empty-title">还没有可陪伴的行程</view>
-    <view class="muted">先创建行程，再开启在途陪伴</view>
-    <button class="primary-button" bindtap="createTrip">创建新行程</button>
+    <view class="empty-copy">先创建一份行程，到达景点后即可签到、听讲解、问路线和灵活调整。</view>
+    <button class="create-button" bindtap="createTrip">创建新行程</button>
   </view>
 </view>

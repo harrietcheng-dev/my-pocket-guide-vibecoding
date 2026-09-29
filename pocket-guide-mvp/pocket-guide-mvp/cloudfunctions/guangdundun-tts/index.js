@@ -11,6 +11,11 @@ exports.main = async (event) => {
   const ssml = `<speak version="1.0" xml:lang="zh-CN"><voice name="zh-CN-XiaoxiaoNeural">${escapeXml(text.trim())}</voice></speak>`
   try {
     const audio = await new Promise((resolve, reject) => {
+      let timeout
+      const fail = error => {
+        if (timeout) clearTimeout(timeout)
+        reject(error)
+      }
       const request = https.request({
         hostname: `${region}.tts.speech.microsoft.com`,
         path: '/cognitiveservices/v1', method: 'POST',
@@ -23,7 +28,7 @@ exports.main = async (event) => {
       }, response => {
         if (response.statusCode !== 200) {
           response.resume()
-          reject(new Error('TTS provider rejected request'))
+          fail(new Error('TTS provider rejected request'))
           return
         }
         const chunks = []
@@ -34,12 +39,12 @@ exports.main = async (event) => {
           chunks.push(chunk)
         })
         response.on('end', () => resolve(Buffer.concat(chunks)))
-        response.on('error', reject)
-        response.on('aborted', () => reject(new Error('Audio interrupted')))
+        response.on('error', fail)
+        response.on('aborted', () => fail(new Error('Audio interrupted')))
       })
-      const timeout = setTimeout(() => request.destroy(new Error('TTS timeout')), 20000)
+      timeout = setTimeout(() => request.destroy(new Error('TTS timeout')), 20000)
       request.on('close', () => clearTimeout(timeout))
-      request.on('error', reject)
+      request.on('error', fail)
       request.end(ssml)
     })
     if (!audio.length) throw new Error('Empty audio')
