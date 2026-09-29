@@ -1,0 +1,74 @@
+<view class="page settings-page">
+  <view class="title">设置与服务</view>
+
+  <view class="section-title">权限与隐私</view>
+  <view class="card menu-card">
+    <view class="menu-row" data-scope="scope.userLocation" data-label="定位权限" bindtap="requestPermission">
+      <view class="menu-main"><view class="menu-title">定位权限</view><view class="muted menu-desc">用于展示附近服务与地图定位</view></view>
+      <view class="menu-side"><text class="perm-state {{locationGranted ? 'on' : ''}}">{{locationStatus}}</text><text class="menu-arrow">›</text></view>
+    </view>
+    <view class="menu-row" data-scope="scope.record" data-label="麦克风权限" bindtap="requestPermission">
+      <view class="menu-main"><view class="menu-title">麦克风权限</view><view class="muted menu-desc">用于语音提问</view></view>
+      <view class="menu-side"><text class="perm-state {{recordGranted ? 'on' : ''}}">{{recordStatus}}</text><text class="menu-arrow">›</text></view>
+    </view>
+    <view class="menu-row">
+      <view class="menu-main"><view class="menu-title">个性化推荐</view><view class="muted menu-desc">根据旅行偏好调整推荐结果</view></view>
+      <switch checked="{{personalized}}" color="#1677e8" bindchange="togglePersonalized" />
+    </view>
+    <view class="privacy-note">语音与隐私<text>语音仅用于识别当前问题，默认不保存原始录音</text></view>
+  </view>
+
+  <view class="section-title">帮助与反馈</view>
+  <view class="card menu-card">
+    <block wx:for="{{helpItems}}" wx:key="key">
+      <view class="menu-row" data-key="{{item.key}}" bindtap="togglePanel">
+        <view class="menu-main"><view class="menu-title">{{item.title}}</view></view>
+        <view class="menu-side"><text class="menu-arrow">{{openPanel === item.key ? '⌃' : '›'}}</text></view>
+      </view>
+      <view wx:if="{{openPanel === item.key}}" class="panel-body">{{item.body}}</view>
+    </block>
+
+    <view class="menu-row" data-key="feedback" bindtap="togglePanel">
+      <view class="menu-main"><view class="menu-title">意见反馈</view><view class="muted menu-desc">{{feedbackContext}}</view></view>
+      <view class="menu-side"><text class="menu-arrow">{{openPanel === 'feedback' ? '⌃' : '›'}}</text></view>
+    </view>
+    <view wx:if="{{openPanel === 'feedback'}}" class="panel-body">
+      <view class="label">问题类型</view>
+      <view><view wx:for="{{feedbackTypes}}" wx:key="*this" class="choice {{feedbackType === item ? 'active' : ''}}" data-value="{{item}}" bindtap="pickFeedbackType">{{item}}</view></view>
+      <view class="label">问题描述</view>
+      <textarea class="textarea" value="{{feedbackText}}" maxlength="500" placeholder="请描述遇到的问题，例如哪一天的哪个地点信息有误" bindinput="inputFeedback" />
+      <view class="derived-tip">与具体行程有关时会自动附带行程编号，不需要重复描述。</view>
+      <button class="primary-button" loading="{{submitting}}" bindtap="submitFeedback">提交反馈</button>
+    </view>
+
+    <view class="menu-row" bindtap="contactUs">
+      <view class="menu-main"><view class="menu-title">联系我们</view></view>
+      <view class="menu-side"><text class="menu-arrow">›</text></view>
+    </view>
+  </view>
+
+  <view class="section-title">关于</view>
+  <view class="card about-card">
+    <view class="about-name">{{appName}}</view>
+    <view class="about-version">版本 {{appVersion}}</view>
+    <view class="about-slogan">让每一段旅程更轻松</view>
+  </view>
+  <view class="card menu-card">
+    <block wx:for="{{legalItems}}" wx:key="key">
+      <view class="menu-row" data-key="{{item.key}}" bindtap="togglePanel">
+        <view class="menu-main"><view class="menu-title">{{item.title}}</view></view>
+        <view class="menu-side"><text class="menu-arrow">{{openPanel === item.key ? '⌃' : '›'}}</text></view>
+      </view>
+      <view wx:if="{{openPanel === item.key}}" class="panel-body">{{item.body}}</view>
+    </block>
+  </view>
+
+  <view class="section-title">存储与数据</view>
+  <view class="card menu-card">
+    <view class="menu-row" bindtap="clearLocalData">
+      <view class="menu-main"><view class="menu-title danger-text">清除本地数据</view><view class="muted menu-desc">删除本机的偏好、收藏、笔记和浏览记录</view></view>
+      <view class="menu-side"><text class="menu-arrow">›</text></view>
+    </view>
+    <view class="derived-tip">仅清除本机数据，服务端已生成的行程不会被删除。</view>
+  </view>
+</view>

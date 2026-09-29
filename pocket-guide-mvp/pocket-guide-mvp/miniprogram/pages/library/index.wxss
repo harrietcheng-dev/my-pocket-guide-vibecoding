@@ -1,0 +1,16 @@
+.library-page { background: linear-gradient(180deg, #e7f7fb 0, #f7fbfd 360rpx); }
+.library-head { padding: 20rpx 4rpx 24rpx; }
+.library-title { color: #07517a; font-size: 38rpx; font-weight: 800; }
+.library-head .muted { margin-top: 8rpx; font-size: 23rpx; }
+.library-stats { display: flex; padding: 24rpx; border-radius: 26rpx; background: #fff; box-shadow: 0 12rpx 30rpx rgba(7,81,122,.07); }
+.library-stats view { flex: 1; display: flex; flex-direction: column; gap: 5rpx; text-align: center; border-right: 1rpx solid #e2ebef; }.library-stats view:last-child { border-right: 0; }
+.library-stats text:first-child { color: #1677e8; font-size: 38rpx; font-weight: 800; }.library-stats text:last-child { color: #667085; font-size: 21rpx; }
+.library-tabs { display: flex; margin: 26rpx 0 18rpx; padding: 7rpx; border-radius: 20rpx; background: #e6f1f5; }
+.library-tab { flex: 1; padding: 17rpx; border-radius: 15rpx; text-align: center; color: #667085; font-size: 25rpx; font-weight: 700; }.library-tab.active { color: #fff; background: #1677e8; }
+.library-card { margin-top: 16rpx; padding: 22rpx; border: 1rpx solid #dce9ee; border-radius: 24rpx; background: #fff; box-shadow: 0 10rpx 26rpx rgba(7,81,122,.055); }
+.library-card-main { display: flex; align-items: flex-start; }.library-icon { flex: 0 0 66rpx; height: 66rpx; margin-right: 18rpx; border-radius: 20rpx; line-height: 66rpx; text-align: center; }.favorite-icon { color: #e57919; background: #fff2df; font-size: 30rpx; }
+.library-content { flex: 1; min-width: 0; }.library-name { color: #1f2937; font-size: 28rpx; font-weight: 800; }.library-meta { margin-top: 6rpx; color: #39718b; font-size: 21rpx; }.library-copy { margin-top: 11rpx; color: #667085; font-size: 22rpx; line-height: 1.5; }.library-date { margin-top: 11rpx; color: #98a2b3; font-size: 19rpx; }
+.library-arrow { padding: 14rpx 0 0 16rpx; color: #1677e8; font-size: 36rpx; }.remove-link { margin-top: 16rpx; padding-top: 14rpx; border-top: 1rpx solid #edf2f4; color: #b42318; text-align: right; font-size: 21rpx; }
+.note-card-head { display: flex; justify-content: space-between; gap: 18rpx; }.note-card-head .library-date { flex: 0 0 auto; margin-top: 2rpx; }.note-copy { margin-top: 17rpx; padding: 18rpx; border-radius: 16rpx; color: #475467; background: #f2fafb; font-size: 24rpx; line-height: 1.65; white-space: pre-wrap; }
+.note-card-actions { display: flex; justify-content: flex-end; gap: 28rpx; margin-top: 17rpx; color: #1677e8; font-size: 21rpx; font-weight: 700; }.note-card-actions .danger { color: #d92d20; }
+.library-empty { margin-top: 24rpx; padding: 70rpx 36rpx; border: 1rpx dashed #cbdfe7; border-radius: 28rpx; text-align: center; background: rgba(255,255,255,.78); }.empty-symbol { width: 86rpx; height: 86rpx; margin: 0 auto 20rpx; border-radius: 50%; line-height: 86rpx; color: #1677e8; background: #eaf7fb; font-size: 42rpx; }.empty-title { margin-bottom: 10rpx; color: #07517a; font-size: 30rpx; font-weight: 800; }.library-empty .muted { line-height: 1.6; }.library-empty button { margin-top: 24rpx; border-radius: 17rpx; color: #fff; background: #1677e8; font-size: 24rpx; }

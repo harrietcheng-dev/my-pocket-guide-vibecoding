@@ -1,0 +1,12 @@
+.prefs-page { padding-bottom: 180rpx; }
+.subtitle { margin: 10rpx 0 26rpx; }
+.prefs-card { padding-bottom: 30rpx; }
+.form-section-title { color: #1f2937; font-size: 30rpx; font-weight: 800; }.form-section-title.divided { margin-top: 34rpx; padding-top: 30rpx; border-top: 1rpx solid #e6edf0; }
+.label { margin: 26rpx 0 12rpx; color: #07517a; font-weight: 600; }
+.input { box-sizing: border-box; width: 100%; min-height: 78rpx; padding: 20rpx; border: 1rpx solid #d5dce0; border-radius: 14rpx; background: #f4f7f9; }
+.derived-tip { margin-top: 12rpx; color: #667085; font-size: 21rpx; line-height: 1.5; }
+.choice { display: inline-block; margin: 0 12rpx 12rpx 0; padding: 12rpx 22rpx; border: 2rpx solid #73c8d8; border-radius: 999rpx; color: #07517a; }
+.choice.active { color: #ffffff; background: #1677e8; border-color: #1677e8; }
+.reset-link { margin-top: 34rpx; padding-top: 26rpx; border-top: 1rpx solid #e6edf0; color: #b42318; text-align: center; font-size: 24rpx; }
+.save-bar { position: fixed; right: 0; bottom: 0; left: 0; padding: 18rpx 28rpx calc(18rpx + env(safe-area-inset-bottom)); border-top: 1rpx solid #e2ebef; background: rgba(255,255,255,.96); }
+.save-button { margin: 0; }

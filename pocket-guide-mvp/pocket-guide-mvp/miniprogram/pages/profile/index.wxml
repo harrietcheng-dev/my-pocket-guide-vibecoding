@@ -1,18 +1,83 @@
 <view class="page profile-page">
-  <view class="profile-head"><view class="profile-avatar">光</view><view><view class="title">我的旅行收藏</view><view class="muted">把喜欢的地点和旅途见闻留在这里</view></view></view>
-  <view class="library-stats"><view><text>{{favorites.length}}</text><text>收藏地点</text></view><view><text>{{notes.length}}</text><text>旅行笔记</text></view></view>
-  <view class="profile-tabs"><view class="profile-tab {{tab === 'favorites' ? 'active' : ''}}" data-tab="favorites" bindtap="switchTab">收藏</view><view class="profile-tab {{tab === 'notes' ? 'active' : ''}}" data-tab="notes" bindtap="switchTab">旅行笔记</view></view>
-
-  <block wx:if="{{tab === 'favorites'}}">
-    <view wx:for="{{favorites}}" wx:key="id" class="library-card">
-      <view class="library-card-main" data-id="{{item.id}}" bindtap="openFavorite"><view class="library-icon favorite-icon">★</view><view class="library-content"><view class="library-name">{{item.name}}</view><view class="library-meta">{{item.type}} · {{item.tripTitle || '独立收藏'}}</view><view wx:if="{{item.reason}}" class="library-copy">{{item.reason}}</view><view class="library-date">收藏于 {{item.displayDate}}</view></view><view class="library-arrow">›</view></view>
-      <view class="remove-link" data-id="{{item.id}}" bindtap="removeFavorite">取消收藏</view>
+  <view class="profile-card">
+    <view class="profile-avatar">
+      <image wx:if="{{profile.avatarPath}}" class="avatar-image" src="{{profile.avatarPath}}" mode="aspectFill" />
+      <text wx:else>{{profile.loggedIn ? '我' : '游'}}</text>
     </view>
-    <view wx:if="{{!favorites.length}}" class="library-empty"><view class="empty-symbol">☆</view><view class="empty-title">还没有收藏地点</view><view class="muted">在行程节点点击“收藏地点”，以后可以从这里快速找到。</view><button bindtap="goTrips">去行程中看看</button></view>
-  </block>
+    <view class="profile-main">
+      <view class="profile-name">{{profile.loggedIn ? profile.nickname : '游客'}}</view>
+      <view class="profile-sub">{{profile.loggedIn ? (profileSummary || '补充常住城市和身份，推荐会更贴合你') : '登录后同步行程和旅行偏好'}}</view>
+    </view>
+    <view class="profile-action" bindtap="openEdit">{{profile.loggedIn ? '编辑资料' : '微信快捷登录'}}</view>
+  </view>
 
-  <block wx:else>
-    <view wx:for="{{notes}}" wx:key="id" class="library-card note-card"><view class="note-card-head"><view><view class="library-name">{{item.placeName}}</view><view class="library-meta">{{item.tripTitle}}</view></view><view class="library-date">{{item.displayDate}}</view></view><view class="note-copy">{{item.text}}</view><view class="note-card-actions"><text data-id="{{item.id}}" bindtap="openNoteTrip">查看所在行程</text><text class="danger" data-id="{{item.id}}" bindtap="removeNote">删除</text></view></view>
-    <view wx:if="{{!notes.length}}" class="library-empty"><view class="empty-symbol">✎</view><view class="empty-title">还没有旅行笔记</view><view class="muted">完成一个行程节点后，就可以记录当时的见闻和感受。</view><button bindtap="goTrips">查看我的行程</button></view>
-  </block>
+  <view class="stat-bar">
+    <view class="stat-cell" bindtap="goTrips"><text class="stat-value">{{stats.trips}}</text><text class="stat-label">行程</text></view>
+    <view class="stat-cell" bindtap="goTrips"><text class="stat-value">{{stats.cities}}</text><text class="stat-label">去过城市</text></view>
+    <view class="stat-cell" data-tab="favorites" bindtap="goLibrary"><text class="stat-value">{{stats.favorites}}</text><text class="stat-label">收藏景点</text></view>
+    <view class="stat-cell" bindtap="goTrips"><text class="stat-value">{{stats.days}}</text><text class="stat-label">旅行天数</text></view>
+  </view>
+  <view wx:if="{{statsError}}" class="stat-error">{{statsError}}</view>
+
+  <view class="section-title">我的旅行</view>
+  <view class="card menu-card">
+    <view class="menu-row" bindtap="goTrips">
+      <view class="menu-main"><view class="menu-title">我的行程</view><view class="muted menu-desc">即将出发、进行中、已完成与已取消</view></view>
+      <view class="menu-side"><text class="menu-arrow">›</text></view>
+    </view>
+    <view class="menu-row" data-tab="favorites" bindtap="goLibrary">
+      <view class="menu-main"><view class="menu-title">我的收藏</view><view class="muted menu-desc">收藏的地点和旅行笔记</view></view>
+      <view class="menu-side"><text class="menu-arrow">›</text></view>
+    </view>
+  </view>
+
+  <view class="section-title">旅行档案</view>
+  <view class="card menu-card">
+    <view class="menu-row" bindtap="goPreferences">
+      <view class="menu-main"><view class="menu-title">旅行偏好</view><view class="muted menu-desc">用于为你生成更合适的行程</view></view>
+      <view class="menu-side"><text class="menu-value">{{preferenceSummary}}</text><text class="menu-arrow">›</text></view>
+    </view>
+    <view class="menu-row" bindtap="goPreferences">
+      <view class="menu-main"><view class="menu-title">特殊需求与无障碍</view><view class="muted menu-desc">少走路、无障碍、医疗与同行人员</view></view>
+      <view class="menu-side"><text class="menu-arrow">›</text></view>
+    </view>
+  </view>
+
+  <view class="section-title">设置与服务</view>
+  <view class="card menu-card">
+    <view class="menu-row" bindtap="goSettings">
+      <view class="menu-main"><view class="menu-title">权限与隐私</view><view class="muted menu-desc">定位、麦克风与数据使用说明</view></view>
+      <view class="menu-side"><text class="menu-arrow">›</text></view>
+    </view>
+    <view class="menu-row" bindtap="goSettings">
+      <view class="menu-main"><view class="menu-title">帮助与反馈</view><view class="muted menu-desc">使用帮助、常见问题与意见反馈</view></view>
+      <view class="menu-side"><text class="menu-arrow">›</text></view>
+    </view>
+    <view class="menu-row" bindtap="goSettings">
+      <view class="menu-main"><view class="menu-title">关于我的口袋导游</view><view class="muted menu-desc">版本信息、用户协议与隐私政策</view></view>
+      <view class="menu-side"><text class="menu-arrow">›</text></view>
+    </view>
+  </view>
+</view>
+
+<view wx:if="{{editOpen}}" class="sheet-mask" bindtap="closeEdit"></view>
+<view wx:if="{{editOpen}}" class="sheet">
+  <view class="sheet-title">编辑资料</view>
+  <view class="sheet-avatar">
+    <button class="avatar-button" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
+      <image wx:if="{{editForm.avatarPath}}" class="avatar-image" src="{{editForm.avatarPath}}" mode="aspectFill" />
+      <text wx:else>选择头像</text>
+    </button>
+    <view class="muted avatar-tip">可使用微信头像或相册图片</view>
+  </view>
+  <view class="label">昵称</view>
+  <input class="input" type="nickname" value="{{editForm.nickname}}" placeholder="点击可选用微信昵称" bindinput="inputNickname" />
+  <view class="label">常住城市</view>
+  <input class="input" value="{{editForm.city}}" placeholder="例如 上海" bindinput="inputCity" />
+  <view class="label">身份标签（可多选）</view>
+  <view><view wx:for="{{tagOptions}}" wx:key="value" class="choice {{item.selected ? 'active' : ''}}" data-value="{{item.value}}" bindtap="toggleTag">{{item.value}}</view></view>
+  <view class="sheet-actions">
+    <button class="secondary-button sheet-button" bindtap="closeEdit">取消</button>
+    <button class="primary-button sheet-button" loading="{{savingProfile}}" bindtap="saveEdit">保存</button>
+  </view>
 </view>
